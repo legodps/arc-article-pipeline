@@ -30,26 +30,39 @@ MAPPING = '''
       }
     }'''
 
-def clean_article_name(article_name)
-    '''
+def clean_article_name(article_name):
+    ''' Strips an article name of illegal characters and replaces typical spacing characters with valid ones
     
+        Args:
+            article_name (str): the name of the article to be cleaned
+        
+        Returns:
+            str: the cleaned article name
     '''
-    return re.sub('[\/*?",<>|]', '', article_name.strip().replace(' ','-').replace('_','-'))
+    return re.sub('[\\\\/*?",<>|.]', '', article_name.strip().replace(' ','-').replace('_','-'))
 
 
-def create_elasticserach_index(index_name,  es, config):
-    '''
+def create_elasticserach_index(index_name,  es):
+    ''' Creates the Elasticsearch index for a given article
     
+        Args:
+            index_name (str): the name of the index to be created
+            es (object): an elasticsearch instance to use for creating indices
     '''
     response = es.indices.create(index=index_name, ignore=400, body=MAPPING)
 
 
-def make_documents(article):
-    """
+def make_documents(index_name, article):
+    """ Yields a series of json objects to be used as documents for inserting into elasticsearch
     
+        Args:
+            article (list): a list of sentences from an article
+        
+        Returns:
+            generator: a iterable group of elasticserach compatible documents
     """
     doc_id = 0
-    for line in article
+    for line in article:
         doc = {
             '_op_type': 'create',
             '_index': index_name,
@@ -61,8 +74,11 @@ def make_documents(article):
         yield (doc)
 
 def store_articles(articles, config):
-     """
+    """ Takes in a series of articles and inserts them into Elasticsearch
         
+        Args:
+            articles (list of dicts): a list of articles to insert into elasticsearch
+            config (dict): a dictionary of configurations
     """
     es = Elasticsearch(hosts=[{"host": args.host, "port": args.port}], retries=3, timeout=60)
     indices = []
@@ -72,7 +88,9 @@ def store_articles(articles, config):
         indices.append(index_name)
         try:
             create_elasticsearch_index(index_name, es, config)
-        response = bulk(es, make_documents(f))
+        except:
+            print(f'{index_name} already exists')
+        response = bulk(es, make_documents(line_array))
     print('Articles have been inserted into the database')
 
 
