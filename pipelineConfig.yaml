@@ -1,0 +1,28 @@
+index_type: 'sentence'
+host: 'localhost'
+port: 9200
+mapping: |-
+  {
+      "mappings": {
+          "sentence": {
+              "dynamic": "false",
+              "properties": {
+                  "docId": {
+                      "type": "keyword"
+                  },
+                  "text": {
+                      "analyzer": "standard",
+                      "type": "text",
+                      "fields": {
+                          "raw": {
+                              "type": "keyword"
+                          }
+                      }
+                  },
+                  "tags": {
+                      "type": "keyword"
+                  }
+              }
+          }
+      }
+  }

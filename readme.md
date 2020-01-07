@@ -3,6 +3,7 @@
 # Setup Instructions
 
 ### 1. Install python 3
+Download and install python 3 from the [Python Website](https://www.python.org/downloads/)
 
 ### 2. Create Virtual env (optional)
 Virtual environments are not required but are recommended, as they allow you to have versions of packages installed
@@ -32,7 +33,10 @@ Run this command to have pip install dependencies (or upgrade them) based on the
 ToDo
 
 # Running the Project
-ToDo
+Not Complete
+
+Use the following command to run the pipeline
+`python -m pipeline -c path/to/config/file`
 
 # Testing Instructions
 To see if unit tests pass and the coverage level run the following commands

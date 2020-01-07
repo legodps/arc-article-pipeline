@@ -16,6 +16,7 @@ class TestArticleArchiver(TestCase):
             'this is line one',
             'this is line two'
         ]
+        test_config = {'index_type': 'sentence'}
         expected_documents = [
             {
                 '_op_type': 'create',
@@ -32,7 +33,7 @@ class TestArticleArchiver(TestCase):
                 '_source': {'text': 'this is line two'.strip()}
             }
         ]
-        document_generator = article_archiver.make_documents('article1', article_lines)
+        document_generator = article_archiver.make_documents('article1', article_lines, test_config)
         actual_documents = [article for article in document_generator]
         self.assertEqual(
             expected_documents,
