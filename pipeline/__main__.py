@@ -3,7 +3,12 @@ from pipeline import article_archiver, load_files
 
 parser = argparse.ArgumentParser(description='Store articles into indices to mirror ARC-Solver setup')
 parser.add_argument('filepath', help='a filepath to a singular article file or a directory of files')
-parser.add_argument('-c','--config_file', default='pipelineConfig.yaml', help='A yaml config file to import settings from, defaults to pipelineConfig.yaml')
+parser.add_argument(
+    '-c',
+    '--config_file',
+    default='pipelineConfig.yaml',
+    help='A yaml config file to import settings from, defaults to pipelineConfig.yaml'
+)
 
 
 def process_articles(filepath, config_file):
