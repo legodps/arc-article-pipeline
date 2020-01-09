@@ -12,10 +12,8 @@ def load_config(config_path):
         Returns:
             dict: a set of properties to use
     """
-    config = {}
     with open(config_path) as config_file:
         config = yaml.load(config_file, Loader=yaml.FullLoader)
-
     return config
 
 
@@ -33,7 +31,7 @@ def process_article_line(article_line):
     for paragraph in article_object['paragraphs']:
         for text_piece in paragraph['para_body']:
             article_text += text_piece['text']
-    return article_text
+    return {'title': article_object['title'].lower(), 'text': article_text}
 
 
 def process_article(filepath):

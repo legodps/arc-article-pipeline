@@ -41,7 +41,7 @@ def make_documents(index_name, article, config):
     doc_id = 0
     for line in article:
         doc = {
-            '_op_type': 'create',
+            '_op_type': 'index',
             '_index': index_name,
             '_type': config['index_type'],
             '_id': doc_id,
@@ -61,12 +61,13 @@ def store_articles(articles, config):
     es = Elasticsearch(hosts=[{"host": config['host'], "port": config['port']}], retries=3, timeout=60)
     indices = []
     for article in articles:
-        line_array = re.split('[.?!]', article.text)
-        index_name = clean_article_name(article.name)
+        line_array = re.split('[.?!]', article['text'])
+        index_name = clean_article_name(article['title'])
         indices.append(index_name)
+        print(index_name)
         try:
             create_elasticsearch_index(index_name, es, config)
-        except:
+        except :
             print(f'{index_name} already exists')
         response = bulk(es, make_documents(index_name, line_array, config))
     print('Articles have been inserted into the database')

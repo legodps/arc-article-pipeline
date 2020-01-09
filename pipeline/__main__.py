@@ -18,6 +18,7 @@ def process_articles(filepath, config_file):
     properties = load_files.load_config(config_file)
     articles = load_files.read_jsonl_articles(filepath)
     print(len(articles))
+    article_archiver.store_articles(articles, properties)
 
 
 args = parser.parse_args()

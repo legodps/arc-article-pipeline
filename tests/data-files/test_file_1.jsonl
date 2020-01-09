@@ -1,2 +1,2 @@
-{"paragraphs":  [{"para_body":  [{"text":  "this is a test"}, {"unused": "text", "text": " of the software"}]}, {"para_body": [{"text": " that I made"}, {"not": "used", "text": " for processing articles"}]}]}
-{"paragraphs":  [{"para_body":  [{"text":  "There are"}, {"unused": "text", "text": " many code bases"}]}, {"para_body": [{"text": " like this"}, {"not": "used", "text": " but this one is mine"}]}]}
+{"title": "test-title", "paragraphs":  [{"para_body":  [{"text":  "this is a test"}, {"unused": "text", "text": " of the software"}]}, {"para_body": [{"text": " that I made"}, {"not": "used", "text": " for processing articles"}]}]}
+{"title": "full-metal-coding", "paragraphs":  [{"para_body":  [{"text":  "There are"}, {"unused": "text", "text": " many code bases"}]}, {"para_body": [{"text": " like this"}, {"not": "used", "text": " but this one is mine"}]}]}

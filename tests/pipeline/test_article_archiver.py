@@ -1,6 +1,7 @@
 from unittest import TestCase
 from pipeline import article_archiver
 
+
 class TestArticleArchiver(TestCase):
     def test_clean_article_name(self):
         self.assertEqual(
@@ -19,14 +20,14 @@ class TestArticleArchiver(TestCase):
         test_config = {'index_type': 'sentence'}
         expected_documents = [
             {
-                '_op_type': 'create',
+                '_op_type': 'index',
                 '_index':  'article1',
                 '_type': 'sentence',
                 '_id': 0,
                 '_source': {'text': 'this is line one'.strip()}
             },
             {
-                '_op_type': 'create',
+                '_op_type': 'index',
                 '_index':  'article1',
                 '_type': 'sentence',
                 '_id': 1,

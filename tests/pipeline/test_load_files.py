@@ -13,17 +13,18 @@ class TestLoadFiles(TestCase):
         self.assertEqual(1, len(config.keys()))
 
     def test_process_article_line(self):
-        test_line = '{"paragraphs": [{"para_body": [{"text": "fake"}, {"not": "used", "text": " line"}] }] }'
+        test_line = '{"paragraphs": [{"para_body": [{"text": "fake"}, {"not": "used", "text": " line"}] }], ' \
+                    '"title": "boop"}'
         self.assertEqual(
-            'fake line',
+            {'title': 'boop', 'text': 'fake line'},
             load_files.process_article_line(test_line),
             'It should extract the text entries from the JSON formatted data'
         )
 
     def test_process_article(self):
         expected_articles = [
-            'this is a test of the software that I made for processing articles',
-            'There are many code bases like this but this one is mine'
+            {'title': 'test-title', 'text': 'this is a test of the software that I made for processing articles'},
+            {'title': 'full-metal-coding', 'text': 'There are many code bases like this but this one is mine'}
         ]
         test_file = 'tests/data-files/test_file_1'
         self.assertEqual(
@@ -39,14 +40,14 @@ class TestLoadFiles(TestCase):
 
     def test_read_jsonl_articles(self):
         expected_articles_partial = [
-            'Poor Pluto, once a planet now relegated to a lesser status',
-            'Ask not for whom the bell tolls, it tolls for thee'
+            {'title': 'pluto-remorse', 'text': 'Poor Pluto, once a planet now relegated to a lesser status'},
+            {'title': 'meditation', 'text': 'Ask not for whom the bell tolls, it tolls for thee'}
         ]
         expected_articles_full = [
-            'this is a test of the software that I made for processing articles',
-            'There are many code bases like this but this one is mine',
-            'Poor Pluto, once a planet now relegated to a lesser status',
-            'Ask not for whom the bell tolls, it tolls for thee'
+            {'title': 'test-title', 'text': 'this is a test of the software that I made for processing articles'},
+            {'title': 'full-metal-coding', 'text': 'There are many code bases like this but this one is mine'},
+            {'title': 'pluto-remorse', 'text': 'Poor Pluto, once a planet now relegated to a lesser status'},
+            {'title': 'meditation', 'text': 'Ask not for whom the bell tolls, it tolls for thee'}
         ]
         self.assertEqual(
             expected_articles_partial,
