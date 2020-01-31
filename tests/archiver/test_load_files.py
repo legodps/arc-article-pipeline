@@ -1,5 +1,5 @@
 from unittest import TestCase
-from pipeline import load_files
+from archiver import load_files
 
 
 class TestLoadFiles(TestCase):

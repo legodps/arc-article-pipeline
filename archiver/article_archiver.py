@@ -1,7 +1,4 @@
-import elasticsearch
 import re
-from elasticsearch import Elasticsearch
-from elasticsearch.helpers import bulk
 
 
 def clean_article_name(article_name):
@@ -13,7 +10,7 @@ def clean_article_name(article_name):
         Returns:
             str: the cleaned article name
     """
-    return re.sub('[\\\\/*?",<>|.]', '', article_name.strip().replace(' ','-').replace('_','-'))
+    return re.sub('[\\\\/*?",<>|.]', '', article_name.strip().replace(' ', '-').replace('_', '-'))
 
 
 def create_elasticsearch_index(index_name,  es, config):
@@ -24,7 +21,7 @@ def create_elasticsearch_index(index_name,  es, config):
             es (object): an Elasticsearch instance to use for creating indices
             config (dict): an object containing configurations
     """
-    response = es.indices.create(index=index_name, ignore=400, body=config['mapping'])
+    es.indices.create(index=index_name, ignore=400, body=config['mapping'])
 
 
 def make_documents(index_name, article, config):
@@ -43,7 +40,6 @@ def make_documents(index_name, article, config):
         doc = {
             '_op_type': 'index',
             '_index': index_name,
-            '_type': config['index_type'],
             '_id': doc_id,
             '_source': {'text': line.strip()}
         }
@@ -51,25 +47,23 @@ def make_documents(index_name, article, config):
         yield doc
 
 
-def store_articles(articles, config):
+def store_articles(articles, config, es, bulk):
     """ Takes in a series of articles and inserts them into Elasticsearch
         
         Args:
             articles (list of dicts): a list of articles to insert into Elasticsearch
             config (dict): a dictionary of configurations
+            es (object): an Elasticsearch client object to store articles with
+            bulk (function): a function for the Elasticsearch library, passed in for ease of unit testing
     """
-    es = Elasticsearch(hosts=[{"host": config['host'], "port": config['port']}], retries=3, timeout=60)
     indices = []
     for article in articles:
         line_array = re.split('[.?!]', article['text'])
         index_name = clean_article_name(article['title'])
         indices.append(index_name)
         print(index_name)
-        try:
-            create_elasticsearch_index(index_name, es, config)
-        except :
-            print(f'{index_name} already exists')
-        response = bulk(es, make_documents(index_name, line_array, config))
+        create_elasticsearch_index(index_name, es, config)
+        bulk(es, make_documents(index_name, line_array, config))
     print('Articles have been inserted into the database')
 
 

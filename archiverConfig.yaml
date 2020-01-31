@@ -1,6 +1,6 @@
-index_type: 'sentence'
 host: 'localhost'
 port: 9200
+data_directory: '../generated_articles/UNH-bm25-ecmpsg.jsonl'
 mapping: |-
   {
       "mappings": {

@@ -30,13 +30,23 @@ Run this command to have pip install dependencies (or upgrade them) based on the
 `pip3 install --upgrade -r requirements.txt`
 
 # Configuring the Project
-ToDo
+In addition to command line arguments, you can configure the archiver via a yaml file with the following properties
+* `host`: the hostname of the Elasticsearch database, default is `localhost`, required
+* `port`: the port of the Elasticsearch database, default is `9200`, required
+* `data_directory`: the filepath of a particular jsonl file or path to a directory of jsonl files. The archiver system
+    prioritizes terminal specification of the data filepath via the `-f` or `--filepath` options over the config file.
+    This is provided for convenience for repeated runs of the Archiver
+* `mapping`: the Elasticsearch index map. This is used to configure the indices of the articles for the best retrieval.
+    Its default should be sufficient. Feel free to experiment if you wish.
+A default config file is provided [archiverConfig.yaml](archiverConfig.yaml)
 
 # Running the Project
-Not Complete
+Use the following command to run the article archiver
+`python -m archiver -f path/to/data/file(s) -c path/to/config/file`
+the `-f` option can be specified in the configuration file as mentioned above
+the `-c` option is not required as long as you are using the base config file
 
-Use the following command to run the pipeline
-`python -m pipeline -c path/to/config/file`
+The archiver is idempotent so it should matter if you rerun it unless you change what articles are being loaded etc.
 
 # Testing Instructions
 To see if unit tests pass and the coverage level run the following commands
@@ -47,3 +57,8 @@ coverage html
 ```
 The first command runs the tests, the second prints a coverage report to the terminal, and the third creates a web-browsable
 version to allow you to look visually where coverage is missing and explore the files
+
+# Common Issues
+If you get a "read-only" issue from Elasticsearch, this could be due to how much free space is left on your system. If
+your hard drive is 95% full, it will not let you re index documents. Clear up some space on your hard drive and try
+again.
