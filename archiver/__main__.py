@@ -1,7 +1,8 @@
 import argparse
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
-from archiver import article_archiver, load_files
+from file_io.load_files import load_config, read_jsonl_articles
+from archiver import article_archiver
 
 parser = argparse.ArgumentParser(description='Store articles into indices to mirror ARC-Solver setup')
 parser.add_argument(
@@ -25,7 +26,7 @@ def process_articles(filepath, config_file):
             filepath (various): the command line argument of the filepath to load articles from
             config_file (str): the command line argument of the config file to use
     """
-    properties = load_files.load_config(config_file)
+    properties = load_config(config_file)
     directory = filepath
 
     # default to use the command line argument if not specified use the config file if present
@@ -33,7 +34,7 @@ def process_articles(filepath, config_file):
         directory = properties['data_directory']
 
     if directory:
-        articles = load_files.read_jsonl_articles(directory)
+        articles = read_jsonl_articles(directory)
         print(len(articles))
         try:
             es = Elasticsearch(hosts=[{'host': properties['host'], 'port': properties['port']}], retries=3, timeout=60)

@@ -74,3 +74,55 @@ def read_jsonl_articles(filepath):
                 all_articles += process_article(f'{filepath}/{filename}')
 
     return all_articles
+
+
+def retrieve_questions(filepath):
+    """
+
+    """
+    with open(filepath) as question_file:
+        question_sets = json.load(question_file)
+
+    parsed_questions = {}
+    for question_set in question_sets:
+        question_set_index = question_set['globalID']
+        parsed_questions[question_set_index] = []
+        question_id = 0
+        for question_key in question_set['questions']['nonDiagramQuestions'].keys():
+            digested_question = {
+                'id': question_id,
+                'question': {
+                    'stem':
+                        question_set['questions']['nonDiagramQuestions'][question_key]['beingAsked'][
+                            'processedText'],
+                    'choices': []
+                },
+                'answerKey':
+                    question_set['questions']['nonDiagramQuestions'][question_key]['correctAnswer'][
+                        'processedText']
+            }
+            for answer_key in question_set['questions']['nonDiagramQuestions'][question_key]['answerChoices'].keys():
+                digested_question['question']['choices'].append({
+                    "text": question_set['questions']['nonDiagramQuestions'][question_key]
+                                        ['answerChoices'][answer_key]['processedText'],
+                    'label': answer_key
+                })
+            parsed_questions[question_set_index].append(digested_question)
+            question_id += 1
+
+    return parsed_questions
+
+
+def read_json_questions(filepath):
+    """
+
+    """
+    all_questions = []
+    try:
+        all_questions = retrieve_questions(filepath)
+    except (IsADirectoryError, FileNotFoundError):
+        for filename in os.listdir(filepath):
+            if '.json' in filename:
+                all_questions += retrieve_questions(f'{filepath}/{filename}')
+
+    return all_questions

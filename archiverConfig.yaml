@@ -1,6 +1,7 @@
 host: 'localhost'
 port: 9200
-data_directory: '../generated_articles/UNH-bm25-ecmpsg.jsonl'
+article_directory: '../generated_articles/UNH-bm25-ecmpsg.jsonl'
+question_directory: 'question-for-extraction/tqa_v1_train.json'
 mapping: |-
   {
       "mappings": {
