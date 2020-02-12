@@ -1,0 +1,28 @@
+host: 'localhost'
+port: 9200
+article_directory: 'change-me'
+question_directory: 'change-me'
+test_set_directory: './question-sets'
+mapping: |-
+  {
+      "mappings": {
+          "dynamic": "false",
+          "properties": {
+              "docId": {
+                  "type": "keyword"
+              },
+              "text": {
+                  "analyzer": "standard",
+                  "type": "text",
+                  "fields": {
+                      "raw": {
+                          "type": "keyword"
+                      }
+                  }
+              },
+              "tags": {
+                  "type": "keyword"
+              }
+          }
+      }
+  }

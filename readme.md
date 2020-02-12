@@ -38,7 +38,7 @@ In addition to command line arguments, you can configure the archiver via a yaml
     This is provided for convenience for repeated runs of the Archiver
 * `mapping`: the Elasticsearch index map. This is used to configure the indices of the articles for the best retrieval.
     Its default should be sufficient. Feel free to experiment if you wish.
-A default config file is provided [archiverConfig.yaml](archiverConfig.yaml)
+A default config file is provided [archiverConfig.yaml](benchmarkConfig.yaml)
 
 # Running the Project
 Use the following command to run the article archiver

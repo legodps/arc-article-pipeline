@@ -1,6 +1,6 @@
 from unittest import TestCase
 from unittest.mock import Mock, call
-from archiver import article_archiver
+from arc_benchmark import article_archiver
 
 
 class TestArticleArchiver(TestCase):
