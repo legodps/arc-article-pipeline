@@ -1,4 +1,8 @@
-# Article Archiver
+# ARC Benchmark
+The ARC Benchmark is a tool designed to read in articles and evaluate them on a set of questions to see how informative
+or useful they are. This Benchmark tool is Designed to use questions from the 
+[TQA question data set from](http://data.allenai.org/tqa/) dataset, specifically: "tqa_v1_train.json" and JSONL articles
+formatted in a particular way (ToDo clarify this)
 
 # Setup Instructions
 
@@ -33,9 +37,13 @@ Run this command to have pip install dependencies (or upgrade them) based on the
 In addition to command line arguments, you can configure the archiver via a yaml file with the following properties
 * `host`: the hostname of the Elasticsearch database, default is `localhost`, required
 * `port`: the port of the Elasticsearch database, default is `9200`, required
-* `data_directory`: the filepath of a particular jsonl file or path to a directory of jsonl files. The archiver system
-    prioritizes terminal specification of the data filepath via the `-f` or `--filepath` options over the config file.
-    This is provided for convenience for repeated runs of the Archiver
+* `article_directory`: the filepath to a singular, or directory of, JSONL article files. This config setting is
+    overridden if a different path is specified via the terminal. This is provided for convenience of multiple runs.
+* `question_directory`: the filepath to a singular, or directory of, JSON question files. This config setting is
+    overridden if a different path is specified via the termnial. This is provided for convenience of multiple runs.
+* `test_set_directory`: the filepath where questions sets should be saved to. DO NOT NAME IT TO ANY EXISTING DIRECTORY
+    THE EXISTING DIRECTORY, THE DEFAULT IS FINE. It is not recommended to change the directory location as it and all
+    files within it will be deleted and recreated by running the benchmark deleted and recreated on successive runs.
 * `mapping`: the Elasticsearch index map. This is used to configure the indices of the articles for the best retrieval.
     Its default should be sufficient. Feel free to experiment if you wish.
 A default config file is provided [archiverConfig.yaml](benchmarkConfig.yaml)

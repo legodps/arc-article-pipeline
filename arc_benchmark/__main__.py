@@ -50,6 +50,9 @@ def run_arc_benchmark(config_file, article_directory, question_directory):
     elif 'test_set_directory' not in config or not isinstance(config['test_set_directory'], str):
         print('ERROR: test_set_directory either is not a string or is not defined via the config file. It is a required'
               'property to run the benchmark.')
+    elif '/tests' in config['test_set_directory'] or '/env' in config['test_set_directory'] \
+            or '/arc_benchmark' in config['test_set_directory'] or '/htmlcov' in config['test_set_directory']:
+        print('Do not set test_set_directory to any critical or already used directories.')
     else:
         es = Elasticsearch(hosts=[{'host': config['host'], 'port': config['port']}], retries=3, timeout=60)
         print('Connection to Elasticsearch cluster established')
