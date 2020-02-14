@@ -40,6 +40,7 @@ def make_documents(index_name, article, config):
     for line in article:
         doc = {
             '_index': index_name,
+            '_op_type': 'index',
             '_id': doc_id,
             '_source': {'text': line.strip()}
         }
