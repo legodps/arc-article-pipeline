@@ -2,7 +2,7 @@ host: 'localhost'
 port: 9200
 article_directory: '../generated_articles/UNH-bm25-ecmpsg.jsonl'
 question_directory: 'question-for-extraction/tqa_v1_train.json'
-test_set_directory: './question-sets'
+benchmark_set_directory: './question-sets'
 mapping: |-
   {
       "mappings": {

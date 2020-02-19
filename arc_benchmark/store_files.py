@@ -1,10 +1,11 @@
-def store_question_sets(question_sets, question_set_ids):
+def store_question_sets(question_sets, question_set_ids, config):
     """ Stores the sets of questions into different files, named based on the question set ID. Not all question sets
         should be saved into files as only a subset will have associated articles to be evaluated on.
 
         Args:
             question_sets (dict): all questions grouped into different sets based on ID
             question_set_ids (list): the list of question ids the articles should be benchmarked on
+            config (dict): config file specified properties to use in running the benchmark
 
         Returns:
             list: all filepaths of the question set files
@@ -25,11 +26,11 @@ def store_question_sets(question_sets, question_set_ids):
                 if choice_index > 0:
                     jsonl_string += ', '
                 jsonl_string += '{"text": "' + question['question']['choices'][choice_index]['text'] \
-                    + ', "label": "' + question['question']['choices'][choice_index]['label'] + '"}'
+                    + '", "label": "' + question['question']['choices'][choice_index]['label'] + '"}'
             jsonl_string += ']}, "answerKey": "' + question['answerKey'] + '"}'
             jsonl_questions.append(jsonl_string)
 
-        with open(f'arc-questions/{filename}', 'w') as jsonl_file:
+        with open(f'{config["benchmark_set_directory"]}/{filename}', 'w') as jsonl_file:
             for question in jsonl_questions:
                 jsonl_file.write(f'{question}\n')
             # print(f'written {filename}')

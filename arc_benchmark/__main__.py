@@ -2,7 +2,7 @@ import argparse
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 from arc_benchmark.config_loader import load_config, override_config
-from arc_benchmark.test_set_creator import create_test_sets
+from arc_benchmark.benchmark_set_creator import create_test_sets
 from arc_benchmark.article_archiver import load_and_store_articles
 
 parser = argparse.ArgumentParser(
@@ -47,12 +47,12 @@ def run_arc_benchmark(config_file, article_directory, question_directory):
     elif not question_filepath or not isinstance(question_filepath, str):
         print('ERROR: question_directory either is not a string or is not defined via terminal arguments/config file.'
               'It is a required property to run the benchmark')
-    elif 'test_set_directory' not in config or not isinstance(config['test_set_directory'], str):
-        print('ERROR: test_set_directory either is not a string or is not defined via the config file. It is a required'
-              'property to run the benchmark.')
-    elif '/tests' in config['test_set_directory'] or '/env' in config['test_set_directory'] \
-            or '/arc_benchmark' in config['test_set_directory'] or '/htmlcov' in config['test_set_directory']:
-        print('Do not set test_set_directory to any critical or already used directories.')
+    elif 'benchmark_set_directory' not in config or not isinstance(config['benchmark_set_directory'], str):
+        print('ERROR: benchmark_set_directory either is not a string or is not defined via the config file. '
+              'It is a required property to run the benchmark.')
+    elif '/tests' in config['benchmark_set_directory'] or '/env' in config['benchmark_set_directory'] \
+            or '/arc_benchmark' in config['benchmark_set_directory'] or '/htmlcov' in config['benchmark_set_directory']:
+        print('Do not set benchmark_set_directory to any critical or already used directories.')
     else:
         es = Elasticsearch(hosts=[{'host': config['host'], 'port': config['port']}], retries=3, timeout=60)
         print('Connection to Elasticsearch cluster established')

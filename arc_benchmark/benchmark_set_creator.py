@@ -5,15 +5,15 @@ from arc_benchmark.store_files import store_question_sets
 
 
 def create_or_clean_directory(config):
-    """ Deletes the test_set_directory if it exists, clearing any previous files out, then recreates the directory
+    """ Deletes the benchmark_set_directory if it exists, clearing any previous files out, then recreates the directory
 
         Args:
             config (dict): config file specified properties to use in running the benchmark
     """
-    if os.path.isdir(config['test_set_directory']):
-        shutil.rmtree(config['test_set_directory'])
+    if os.path.isdir(config['benchmark_set_directory']):
+        shutil.rmtree(config['benchmark_set_directory'])
 
-    os.mkdir(config['test_set_directory'])
+    os.mkdir(config['benchmark_set_directory'])
 
 
 def create_test_sets(question_directory, question_set_ids, config):
@@ -32,4 +32,4 @@ def create_test_sets(question_directory, question_set_ids, config):
     create_or_clean_directory(config)
 
     question_sets = read_json_questions(question_directory)
-    return store_question_sets(question_sets, question_set_ids)
+    return store_question_sets(question_sets, question_set_ids, config)

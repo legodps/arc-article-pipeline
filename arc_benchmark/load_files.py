@@ -61,7 +61,7 @@ def read_jsonl_articles(filepath):
         all_articles = process_article(filepath)
     except (IsADirectoryError, FileNotFoundError):
         # if it errors, try to open it as a directory containing JSONL files
-        for filename in os.listdir(filepath):
+        for filename in sorted(os.listdir(filepath)):
             if '.jsonl' in filename:
                 all_articles += process_article(f'{filepath}/{filename}')
 
@@ -78,7 +78,8 @@ def retrieve_questions(filepath):
         Returns:
             dict: groups of questions to be stored for later benchmarking
     """
-    with open(filepath) as question_file:
+    filename = filepath if '.json' in filepath else f'{filepath}.json'
+    with open(filename) as question_file:
         question_sets = json.load(question_file)
 
     parsed_questions = {}
@@ -88,16 +89,14 @@ def retrieve_questions(filepath):
         question_id = 0
         for question_key in question_set['questions']['nonDiagramQuestions'].keys():
             digested_question = {
-                'id': question_id,
+                'id': str(question_id),
                 'question': {
                     'stem':
-                        question_set['questions']['nonDiagramQuestions'][question_key]['beingAsked'][
-                            'processedText'],
+                        question_set['questions']['nonDiagramQuestions'][question_key]['beingAsked']['processedText'],
                     'choices': []
                 },
                 'answerKey':
-                    question_set['questions']['nonDiagramQuestions'][question_key]['correctAnswer'][
-                        'processedText']
+                    question_set['questions']['nonDiagramQuestions'][question_key]['correctAnswer']['processedText']
             }
             for answer_key in question_set['questions']['nonDiagramQuestions'][question_key]['answerChoices'].keys():
                 digested_question['question']['choices'].append({
@@ -125,7 +124,7 @@ def read_json_questions(filepath):
     try:
         all_questions = retrieve_questions(filepath)
     except (IsADirectoryError, FileNotFoundError):
-        for filename in os.listdir(filepath):
+        for filename in sorted(os.listdir(filepath)):
             if '.json' in filename:
                 all_questions = {
                     **all_questions,

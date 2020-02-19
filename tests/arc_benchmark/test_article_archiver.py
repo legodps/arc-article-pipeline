@@ -89,19 +89,19 @@ class TestArticleArchiver(TestCase):
         mock_bulk = Mock(return_value=True)
         fake_config = {'mapping': {}}
         question_set_indices = article_archiver.load_and_store_articles(
-            'tests/data-files/test_file_1.jsonl',
+            'tests/data-files/articles/test_articles_1.jsonl',
             es_mock,
             mock_bulk,
             fake_config
         )
         self.assertEqual(
-            {'efgh': ['test-file-1-test-title'], 'mnop': ['test-file-1-full-metal-coding']},
+            {'efgh': ['test-articles-1-test-title'], 'mnop': ['test-articles-1-full-metal-coding']},
             question_set_indices,
             'it should load the files from the article directory and save them to Elasticsearch'
         )
         create_mock.assert_has_calls([
-            call(index='test-file-1-test-title', ignore=400, body={}),
-            call(index='test-file-1-full-metal-coding', ignore=400, body={})
+            call(index='test-articles-1-test-title', ignore=400, body={}),
+            call(index='test-articles-1-full-metal-coding', ignore=400, body={})
         ])
         mock_bulk.assert_called()
 
@@ -113,7 +113,7 @@ class TestArticleArchiver(TestCase):
         self.assertRaises(
             ElasticsearchException,
             article_archiver.load_and_store_articles(
-                'tests/data-files/test_file_1.jsonl',
+                'tests/data-files/articles/test_articles_1.jsonl',
                 es_mock,
                 mock_bulk,
                 fake_config
