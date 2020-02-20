@@ -1,5 +1,8 @@
 import json
 import os
+from arc_benchmark.constants import ANSWER_CHOICES, ANSWER_KEY, BEING_ASKED, CHOICES, CORRECT_ANSWER, GLOBAL_ID, ID, \
+    JSONL_EXTENSION, JSON_EXTENSION, LABEL, NON_DIAGRAM_QUESTIONS, PARA_BODY, PARAGRAPHS, PROCESSED_TEXT, QUESTION, \
+    QUESTIONS, SQUID, STEM, TEXT, TITLE
 
 
 def process_article_line(article_line, filename):
@@ -16,13 +19,13 @@ def process_article_line(article_line, filename):
     """
     article_object = json.loads(article_line)
     article_text = ''
-    for paragraph in article_object['paragraphs']:
-        for text_piece in paragraph['para_body']:
-            article_text += text_piece['text']
+    for paragraph in article_object[PARAGRAPHS]:
+        for text_piece in paragraph[PARA_BODY]:
+            article_text += text_piece[TEXT]
     return {
-        'title': f'{filename.lower()}-{article_object["title"].lower()}',
-        'text': article_text,
-        'id': article_object['squid'].split(':')[1]
+        TITLE: f'{filename.lower()}-{article_object[TITLE].lower()}',
+        TEXT: article_text,
+        ID: article_object[SQUID].split(':')[1]
     }
 
 
@@ -37,11 +40,11 @@ def process_article(filepath):
     """
     articles = []
     # appends the JSONL extension if it does not exist in the path to the file
-    filename = filepath if '.jsonl' in filepath else f'{filepath}.jsonl'
+    filename = filepath if JSONL_EXTENSION in filepath else f'{filepath}{JSONL_EXTENSION}'
     with open(filename) as article_file:
         article_line = article_file.readline()
         while article_line:
-            articles.append(process_article_line(article_line, filename.split('.jsonl')[0].split('/')[-1]))
+            articles.append(process_article_line(article_line, filename.split(JSONL_EXTENSION)[0].split('/')[-1]))
             article_line = article_file.readline()
     return articles
 
@@ -62,7 +65,7 @@ def read_jsonl_articles(filepath):
     except (IsADirectoryError, FileNotFoundError):
         # if it errors, try to open it as a directory containing JSONL files
         for filename in sorted(os.listdir(filepath)):
-            if '.jsonl' in filename:
+            if JSONL_EXTENSION in filename:
                 all_articles += process_article(f'{filepath}/{filename}')
 
     return all_articles
@@ -78,31 +81,31 @@ def retrieve_questions(filepath):
         Returns:
             dict: groups of questions to be stored for later benchmarking
     """
-    filename = filepath if '.json' in filepath else f'{filepath}.json'
+    filename = filepath if JSON_EXTENSION in filepath else f'{filepath}{JSON_EXTENSION}'
     with open(filename) as question_file:
         question_sets = json.load(question_file)
 
     parsed_questions = {}
     for question_set in question_sets:
-        question_set_index = question_set['globalID']
+        question_set_index = question_set[GLOBAL_ID]
         parsed_questions[question_set_index] = []
         question_id = 0
-        for question_key in question_set['questions']['nonDiagramQuestions'].keys():
+        for question_key in question_set[QUESTIONS][NON_DIAGRAM_QUESTIONS].keys():
             digested_question = {
-                'id': str(question_id),
-                'question': {
-                    'stem':
-                        question_set['questions']['nonDiagramQuestions'][question_key]['beingAsked']['processedText'],
-                    'choices': []
+                ID: str(question_id),
+                QUESTION: {
+                    STEM:
+                        question_set[QUESTIONS][NON_DIAGRAM_QUESTIONS][question_key][BEING_ASKED][PROCESSED_TEXT],
+                    CHOICES: []
                 },
-                'answerKey':
-                    question_set['questions']['nonDiagramQuestions'][question_key]['correctAnswer']['processedText']
+                ANSWER_KEY:
+                    question_set[QUESTIONS][NON_DIAGRAM_QUESTIONS][question_key][CORRECT_ANSWER][PROCESSED_TEXT]
             }
-            for answer_key in question_set['questions']['nonDiagramQuestions'][question_key]['answerChoices'].keys():
-                digested_question['question']['choices'].append({
-                    "text": question_set['questions']['nonDiagramQuestions'][question_key]
-                                        ['answerChoices'][answer_key]['processedText'],
-                    'label': answer_key
+            for answer_key in question_set[QUESTIONS][NON_DIAGRAM_QUESTIONS][question_key][ANSWER_CHOICES].keys():
+                digested_question[QUESTION][CHOICES].append({
+                    TEXT: question_set[QUESTIONS][NON_DIAGRAM_QUESTIONS][question_key]
+                                      [ANSWER_CHOICES][answer_key][PROCESSED_TEXT],
+                    LABEL: answer_key
                 })
             parsed_questions[question_set_index].append(digested_question)
             question_id += 1
@@ -125,7 +128,7 @@ def read_json_questions(filepath):
         all_questions = retrieve_questions(filepath)
     except (IsADirectoryError, FileNotFoundError):
         for filename in sorted(os.listdir(filepath)):
-            if '.json' in filename:
+            if JSON_EXTENSION in filename:
                 all_questions = {
                     **all_questions,
                     **retrieve_questions(f'{filepath}/{filename}')

@@ -41,7 +41,7 @@ In addition to terminal arguments, you can configure the benchmark via a yaml fi
 * `article_directory`: the filepath to a singular, or directory of, JSONL article files. This config setting is
     overridden if a different path is specified via the terminal. This is provided for convenience of multiple runs.
 * `question_directory`: the filepath to a singular, or directory of, JSON question files. This config setting is
-    overridden if a different path is specified via the termnial. This is provided for convenience of multiple runs.
+    overridden if a different path is specified via the terminal. This is provided for convenience of multiple runs.
 * `benchmark_set_directory`: the filepath where questions sets should be saved to. DO NOT NAME IT TO ANY EXISTING 
     DIRECTORY, THE DEFAULT IS FINE. It is not recommended to change the directory location as it and all files within it
     will be deleted and recreated by running the benchmark deleted and recreated on successive runs.

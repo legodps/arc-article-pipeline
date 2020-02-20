@@ -1,5 +1,7 @@
 import re
 from arc_benchmark.load_files import read_jsonl_articles
+from arc_benchmark.constants import ELASTICSEARCH_ID, ELASTICSEARCH_INDEX, ELASTICSEARCH_OP_TYPE, \
+    ELASTICSEARCH_SOURCE, ID, INDEX, MAPPING, TEXT, TITLE
 
 
 def clean_article_name(article_name):
@@ -22,7 +24,7 @@ def create_elasticsearch_index(index_name,  es, config):
             es (object): an Elasticsearch instance to use for creating indices
             config (dict): an object containing configurations
     """
-    es.indices.create(index=index_name, ignore=400, body=config['mapping'])
+    es.indices.create(index=index_name, ignore=400, body=config[MAPPING])
 
 
 def make_documents(index_name, article, config):
@@ -39,10 +41,10 @@ def make_documents(index_name, article, config):
     doc_id = 0
     for line in article:
         doc = {
-            '_index': index_name,
-            '_op_type': 'index',
-            '_id': doc_id,
-            '_source': {'text': line.strip()}
+            ELASTICSEARCH_INDEX: index_name,
+            ELASTICSEARCH_OP_TYPE: INDEX,
+            ELASTICSEARCH_ID: doc_id,
+            ELASTICSEARCH_SOURCE: {TEXT: line.strip()}
         }
         doc_id += 1
         yield doc
@@ -62,14 +64,14 @@ def store_articles(articles, es, bulk, config):
     """
     question_set_indices = {}
     for article in articles:
-        line_array = re.split('[.?!]', article['text'])
-        index_name = clean_article_name(article['title'])
+        line_array = re.split('[.?!]', article[TEXT])
+        index_name = clean_article_name(article[TITLE])
         create_elasticsearch_index(index_name, es, config)
         bulk(es, make_documents(index_name, line_array, config))
-        if article['id'] in question_set_indices:
-            question_set_indices[article['id']].append(index_name)
+        if article[ID] in question_set_indices:
+            question_set_indices[article[ID]].append(index_name)
         else:
-            question_set_indices[article['id']] = [index_name]
+            question_set_indices[article[ID]] = [index_name]
     print('Articles have been inserted into the database')
     return question_set_indices
 
@@ -90,4 +92,4 @@ def load_and_store_articles(article_directory, es, bulk, config):
     try:
         return store_articles(articles, es, bulk, config)
     except:
-        print('an elasticsearch error has occurred')
+        print('an Elasticsearch error has occurred')
