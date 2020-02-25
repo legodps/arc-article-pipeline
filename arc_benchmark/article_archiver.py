@@ -1,7 +1,7 @@
 import re
 from arc_benchmark.load_files import read_jsonl_articles
 from arc_benchmark.constants import ELASTICSEARCH_ID, ELASTICSEARCH_INDEX, ELASTICSEARCH_OP_TYPE, \
-    ELASTICSEARCH_SOURCE, ID, INDEX, MAPPING, TEXT, TITLE
+    ELASTICSEARCH_SOURCE, ELASTICSEARCH_TYPE, ID, INDEX, MAPPING, SENTENCE, TEXT, TITLE
 
 
 def clean_article_name(article_name):
@@ -42,6 +42,7 @@ def make_documents(index_name, article, config):
     for line in article:
         doc = {
             ELASTICSEARCH_INDEX: index_name,
+            ELASTICSEARCH_TYPE: SENTENCE,
             ELASTICSEARCH_OP_TYPE: INDEX,
             ELASTICSEARCH_ID: doc_id,
             ELASTICSEARCH_SOURCE: {TEXT: line.strip()}

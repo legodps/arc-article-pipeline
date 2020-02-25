@@ -1,28 +1,34 @@
 host: 'localhost'
 port: 9200
-article_directory: '../generated_articles/UNH-bm25-ecmpsg.jsonl'
-question_directory: 'question-for-extraction/tqa_v1_train.json'
+article_directory: 'path/to/article/file(s)'
+question_directory: 'path/to/question/file(s)'
 benchmark_set_directory: './question-sets'
+arc_solver_directory: 'path/to/ARC-Solvers'
+arc_data_subdirectory: 'data/ARC-V1-Feb2018/ARC-Challenge'
+arc_model_subdirectory: 'data/ARC-V1-Models-Aug2018/decompatt/'
+conda_environment_name: 'yourCondaEnvironment'
 mapping: |-
   {
-      "mappings": {
-          "dynamic": "false",
-          "properties": {
-              "docId": {
-                  "type": "keyword"
-              },
-              "text": {
-                  "analyzer": "standard",
-                  "type": "text",
-                  "fields": {
-                      "raw": {
-                          "type": "keyword"
-                      }
-                  }
-              },
-              "tags": {
-                  "type": "keyword"
+    "mappings": {
+      "sentence": {
+        "dynamic": "false",
+        "properties": {
+          "docId": {
+            "type": "keyword"
+          },
+          "text": {
+            "analyzer": "snowball",
+            "type": "text",
+            "fields": {
+              "raw": {
+                "type": "keyword"
               }
+            }
+          },
+          "tags": {
+            "type": "keyword"
           }
+        }
       }
+    }
   }

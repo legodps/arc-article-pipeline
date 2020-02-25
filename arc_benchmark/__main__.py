@@ -4,9 +4,10 @@ from elasticsearch.helpers import bulk
 from arc_benchmark.config_loader import load_config, override_config
 from arc_benchmark.benchmark_set_creator import create_test_sets
 from arc_benchmark.article_archiver import load_and_store_articles
-from arc_benchmark.constants import ARC_BENCHMARK_DIRECTORY, ARTICLE_DIRECTORY, BENCHMARK_CONFIG_YAML, \
-    BENCHMARK_SET_DIRECTORY, CONFIG_FILE, ENV_DIRECTORY, HOST, HTMLCOV_DIRECTORY, PORT, QUESTION_DIRECTORY, \
-    TESTS_DIRECTORY
+from arc_benchmark.arc_runner import evaluate_articles
+from arc_benchmark.constants import ARC_BENCHMARK_DIRECTORY, ARC_SOLVER_DIRECTORY, ARTICLE_DIRECTORY, \
+    BENCHMARK_CONFIG_YAML, BENCHMARK_SET_DIRECTORY, CONFIG_FILE, ENV_DIRECTORY, HOST, HTMLCOV_DIRECTORY, PORT, \
+    QUESTION_DIRECTORY, TESTS_DIRECTORY
 
 parser = argparse.ArgumentParser(
     description='Benchmarks generated articles against question sets using the ARC QA system'
@@ -27,9 +28,14 @@ parser.add_argument(
     default=None,
     help='a filepath to a singular question file or a directory of question files'
 )
+parser.add_argument(
+    f'--{ARC_SOLVER_DIRECTORY}',
+    default=None,
+    help='a filepath to the top-level directory of the ARC Solver system'
+)
 
 
-def run_arc_benchmark(config_file, article_directory, question_directory):
+def run_arc_benchmark(config_file, article_directory, question_directory, arc_solver_directory):
     """ Runs the ARC-Solver QA system to perform a benchmark on a set of articles with a set of questions.
 
         Args:
@@ -38,17 +44,22 @@ def run_arc_benchmark(config_file, article_directory, question_directory):
                 benchmark on
             question_directory (str): the filepath to a singular, or directory of, JSON question files to evaluate
                 the articles with
+            arc_solver_directory (str): the filepath to the directory ARC-Solvers will look to, to run predictions on
     """
     config = load_config(config_file)
 
     article_filepath = override_config(ARTICLE_DIRECTORY, article_directory, config)
     question_filepath = override_config(QUESTION_DIRECTORY, question_directory, config)
+    arc_solver_filepath = override_config(ARC_SOLVER_DIRECTORY, arc_solver_directory, config)
 
     if not article_filepath or not isinstance(article_filepath, str):
         print(f'ERROR: {ARTICLE_DIRECTORY} either is not a string or is not defined via terminal arguments/config file.'
               ' It is a required property to run the benchmark')
     elif not question_filepath or not isinstance(question_filepath, str):
         print(f'ERROR: {QUESTION_DIRECTORY} either is not a string or is not defined via terminal arguments/config '
+              f'file. It is a required property to run the benchmark')
+    elif not arc_solver_filepath or not isinstance(arc_solver_filepath, str):
+        print(f'ERROR: {ARC_SOLVER_DIRECTORY} either is not a string or is not defined via terminal arguments/config '
               f'file. It is a required property to run the benchmark')
     elif BENCHMARK_SET_DIRECTORY not in config or not isinstance(config[BENCHMARK_SET_DIRECTORY], str):
         print(f'ERROR: {BENCHMARK_SET_DIRECTORY} either is not a string or is not defined via the config file. '
@@ -62,11 +73,11 @@ def run_arc_benchmark(config_file, article_directory, question_directory):
         print('Connection to Elasticsearch cluster established')
 
         question_set_indices = load_and_store_articles(article_filepath, es, bulk, config)
-        question_jsonl_filepaths = create_test_sets(question_filepath, question_set_indices.keys(), config)
+        benchmark_set_filepaths = create_test_sets(question_filepath, question_set_indices.keys(), config)
 
-        # ToDo: add step 3, the running of the ARC QA system
+        evaluate_articles(question_set_indices, benchmark_set_filepaths, arc_solver_filepath, config)
 
 
 args = parser.parse_args()
 
-run_arc_benchmark(args.config_file, args.article_directory, args.question_directory)
+run_arc_benchmark(args.config_file, args.article_directory, args.question_directory, args.arc_solver_directory)

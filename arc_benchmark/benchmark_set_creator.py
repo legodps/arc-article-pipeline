@@ -29,7 +29,7 @@ def store_question_sets(question_sets, question_set_ids, config):
         Returns:
             list: all filepaths of the question set files
     """
-    question_set_filepaths = []
+    question_set_filepaths = {}
     for question_set_key in question_sets.keys():
         if question_set_key not in question_set_ids:
             continue
@@ -53,7 +53,7 @@ def store_question_sets(question_sets, question_set_ids, config):
             for question in jsonl_questions:
                 jsonl_file.write(f'{question}\n')
 
-        question_set_filepaths.append(f'{config[BENCHMARK_SET_DIRECTORY]}/{filename}')
+        question_set_filepaths[question_set_key] = f'{config[BENCHMARK_SET_DIRECTORY]}/{filename}'
 
     return question_set_filepaths
 
