@@ -72,10 +72,10 @@ def run_arc_benchmark(config_file, article_directory, question_directory, arc_so
         es = Elasticsearch(hosts=[{HOST: config[HOST], PORT: config[PORT]}], retries=3, timeout=60)
         print('Connection to Elasticsearch cluster established')
 
-        question_set_indices = load_and_store_articles(article_filepath, es, bulk, config)
+        question_set_indices, index_files = load_and_store_articles(article_filepath, es, bulk, config)
         benchmark_set_filepaths = create_test_sets(question_filepath, question_set_indices.keys(), config)
 
-        evaluate_articles(question_set_indices, benchmark_set_filepaths, arc_solver_filepath, config)
+        evaluate_articles(index_files, question_set_indices, benchmark_set_filepaths, arc_solver_filepath, config)
 
 
 args = parser.parse_args()

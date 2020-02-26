@@ -55,7 +55,7 @@ def run_arc_on_index(arc_solver_directory, index, config):
             }
 
 
-def evaluate_articles(question_set_indices, benchmark_set_filepaths, arc_solver_directory, config):
+def evaluate_articles(index_files, question_set_indices, benchmark_set_filepaths, arc_solver_directory, config):
     """
 
     """

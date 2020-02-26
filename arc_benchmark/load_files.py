@@ -1,8 +1,8 @@
 import json
 import os
-from arc_benchmark.constants import ANSWER_CHOICES, ANSWER_KEY, BEING_ASKED, CHOICES, CORRECT_ANSWER, GLOBAL_ID, ID, \
-    JSONL_EXTENSION, JSON_EXTENSION, LABEL, NON_DIAGRAM_QUESTIONS, PARA_BODY, PARAGRAPHS, PROCESSED_TEXT, QUESTION, \
-    QUESTIONS, SQUID, STEM, TEXT, TITLE
+from arc_benchmark.constants import ANSWER_CHOICES, ANSWER_KEY, BEING_ASKED, CHOICES, CORRECT_ANSWER, FILE, GLOBAL_ID, \
+    ID, JSONL_EXTENSION, JSON_EXTENSION, LABEL, NON_DIAGRAM_QUESTIONS, PARA_BODY, PARAGRAPHS, PROCESSED_TEXT, \
+    QUESTION, QUESTIONS, SQUID, STEM, TEXT, TITLE
 
 
 def process_article_line(article_line, filename):
@@ -23,9 +23,10 @@ def process_article_line(article_line, filename):
         for text_piece in paragraph[PARA_BODY]:
             article_text += text_piece[TEXT]
     return {
-        TITLE: f'{filename.lower()}-{article_object[TITLE].lower()}',
+        TITLE: f'{filename}-{article_object[TITLE].lower()}',
         TEXT: article_text,
-        ID: article_object[SQUID].split(':')[1]
+        ID: article_object[SQUID].split(':')[1],
+        FILE: filename
     }
 
 
@@ -44,7 +45,9 @@ def process_article(filepath):
     with open(filename) as article_file:
         article_line = article_file.readline()
         while article_line:
-            articles.append(process_article_line(article_line, filename.split(JSONL_EXTENSION)[0].split('/')[-1]))
+            articles.append(
+                process_article_line(article_line, filename.split(JSONL_EXTENSION)[0].split('/')[-1].lower())
+            )
             article_line = article_file.readline()
     return articles
 

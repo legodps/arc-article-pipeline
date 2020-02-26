@@ -31,12 +31,14 @@ class TestArticleArchiver(TestCase):
                 '_op_type': 'index',
                 '_index':  'article1',
                 '_id': 0,
+                '_type': 'sentence',
                 '_source': {'text': 'this is line one'.strip()}
             },
             {
                 '_op_type': 'index',
                 '_index':  'article1',
                 '_id': 1,
+                '_type': 'sentence',
                 '_source': {'text': 'this is line two'.strip()}
             }
         ]
@@ -56,25 +58,33 @@ class TestArticleArchiver(TestCase):
             {
                 'text': 'this is one fake article. It will be split into two lines',
                 'title': 'fake_article_1',
-                'id': 'manta'
+                'id': 'manta',
+                'file': 'alpha'
             },
             {
                 'text': 'this is another fake article, but it will only result in one line',
                 'title': 'fake_article_2',
-                'id': 'ray'
+                'id': 'ray',
+                'file': 'beta'
             },
             {
                 'text': 'this is a third fake article and it will be one line',
                 'title': 'fake_article_3',
-                'id': 'ray'
+                'id': 'ray',
+                'file': 'beta'
             }
         ]
         fake_config = {'mapping': {}}
-        question_set_indices = article_archiver.store_articles(fake_articles, es_mock, mock_bulk, fake_config)
+        question_set_indices, index_files = article_archiver.store_articles(fake_articles, es_mock, mock_bulk, fake_config)
         self.assertEqual(
             {'manta': ['fake-article-1'], 'ray': ['fake-article-2', 'fake-article-3']},
             question_set_indices,
-            'it should product a list of article indices associated with their question set ids'
+            'it should produce a list of article indices associated with their question set ids'
+        )
+        self.assertEqual(
+            {'fake-article-1': 'alpha', 'fake-article-2': 'beta', 'fake-article-3': 'beta'},
+            index_files,
+            'it should list indices with their associated files'
         )
         create_mock.assert_has_calls([
             call(index='fake-article-1', ignore=400, body={}),
@@ -88,7 +98,7 @@ class TestArticleArchiver(TestCase):
         es_mock = Mock(indices=Mock(create=create_mock))
         mock_bulk = Mock(return_value=True)
         fake_config = {'mapping': {}}
-        question_set_indices = article_archiver.load_and_store_articles(
+        question_set_indices, index_files = article_archiver.load_and_store_articles(
             'tests/data-files/articles/test_articles_1.jsonl',
             es_mock,
             mock_bulk,
@@ -98,6 +108,11 @@ class TestArticleArchiver(TestCase):
             {'efgh': ['test-articles-1-test-title'], 'mnop': ['test-articles-1-full-metal-coding']},
             question_set_indices,
             'it should load the files from the article directory and save them to Elasticsearch'
+        )
+        self.assertEqual(
+            {'test-articles-1-test-title': 'test_articles_1', 'test-articles-1-full-metal-coding': 'test_articles_1'},
+            index_files,
+            'it should associate the article indices with their file'
         )
         create_mock.assert_has_calls([
             call(index='test-articles-1-test-title', ignore=400, body={}),

@@ -8,7 +8,7 @@ class TestLoadFiles(TestCase):
         test_line = '{"squid": "lol:asdf", "title": "boop", "paragraphs": [{"para_body": [{"text": "fake"},' \
                     '{"not": "used", "text": " line"}] }] }'
         self.assertEqual(
-            {'title': 'bongo_cat-boop', 'text': 'fake line', 'id': 'asdf'},
+            {'title': 'bongo_cat-boop', 'text': 'fake line', 'id': 'asdf', 'file': 'bongo_cat'},
             process_article_line(test_line, 'bongo_cat'),
             'It should extract the text entries from the JSON formatted data'
         )
@@ -18,12 +18,14 @@ class TestLoadFiles(TestCase):
             {
                 'title': 'test_articles_1-test-title',
                 'text': 'this is a test of the software that I made for processing articles',
-                'id': 'efgh'
+                'id': 'efgh',
+                'file': 'test_articles_1'
             },
             {
                 'title': 'test_articles_1-full-metal-coding',
                 'text': 'There are many code bases like this but this one is mine',
-                'id': 'mnop'
+                'id': 'mnop',
+                'file': 'test_articles_1'
             }
         ]
         test_file = 'tests/data-files/articles/test_articles_1'
@@ -43,34 +45,40 @@ class TestLoadFiles(TestCase):
             {
                 'title': 'test_articles_2-pluto-remorse',
                 'text': 'Poor Pluto, once a planet now relegated to a lesser status',
-                'id': 'uvwx'
+                'id': 'uvwx',
+                'file': 'test_articles_2'
             },
             {
                 'title': 'test_articles_2-meditation',
                 'text': 'Ask not for whom the bell tolls, it tolls for thee',
-                'id': 'cdef'
+                'id': 'cdef',
+                'file': 'test_articles_2'
             }
         ]
         expected_articles_full = [
             {
                 'title': 'test_articles_1-test-title',
                 'text': 'this is a test of the software that I made for processing articles',
-                'id': 'efgh'
+                'id': 'efgh',
+                'file': 'test_articles_1'
             },
             {
                 'title': 'test_articles_1-full-metal-coding',
                 'text': 'There are many code bases like this but this one is mine',
-                'id': 'mnop'
+                'id': 'mnop',
+                'file': 'test_articles_1'
             },
             {
                 'title': 'test_articles_2-pluto-remorse',
                 'text': 'Poor Pluto, once a planet now relegated to a lesser status',
-                'id': 'uvwx'
+                'id': 'uvwx',
+                'file': 'test_articles_2'
             },
             {
                 'title': 'test_articles_2-meditation',
                 'text': 'Ask not for whom the bell tolls, it tolls for thee',
-                'id': 'cdef'
+                'id': 'cdef',
+                'file': 'test_articles_2'
             }
         ]
         self.assertEqual(
