@@ -1,7 +1,8 @@
 import re
+from elasticsearch.exceptions import TransportError
 from arc_benchmark.load_files import read_jsonl_articles
-from arc_benchmark.constants import ELASTICSEARCH_ID, ELASTICSEARCH_INDEX, ELASTICSEARCH_OP_TYPE, \
-    ELASTICSEARCH_SOURCE, ELASTICSEARCH_TYPE, FILE, ID, INDEX, MAPPING, SENTENCE, TEXT, TITLE
+from arc_benchmark.constants import ELASTICSEARCH_DOC, ELASTICSEARCH_ID, ELASTICSEARCH_INDEX, ELASTICSEARCH_OP_TYPE, \
+    ELASTICSEARCH_SOURCE, ELASTICSEARCH_TYPE, FILE, ID, INDEX, MAPPING, TEXT, TITLE
 
 
 def clean_article_name(article_name):
@@ -42,7 +43,7 @@ def make_documents(index_name, article, config):
     for line in article:
         doc = {
             ELASTICSEARCH_INDEX: index_name,
-            ELASTICSEARCH_TYPE: SENTENCE,
+            ELASTICSEARCH_TYPE: ELASTICSEARCH_DOC,
             ELASTICSEARCH_OP_TYPE: INDEX,
             ELASTICSEARCH_ID: doc_id,
             ELASTICSEARCH_SOURCE: {TEXT: line.strip()}
@@ -66,16 +67,25 @@ def store_articles(articles, es, bulk, config):
     """
     question_set_indices = {}
     index_file = {}
+    print(len(articles))
+    count = 0
     for article in articles:
         line_array = re.split('[.?!]', article[TEXT])
         index_name = clean_article_name(article[TITLE])
         create_elasticsearch_index(index_name, es, config)
-        bulk(es, make_documents(index_name, line_array, config))
+        make_documents(index_name, line_array, config)
+        try:
+            bulk(es, make_documents(index_name, line_array, config))
+        except TransportError:
+            print(index_name)
         index_file[index_name] = article[FILE]
         if article[ID] in question_set_indices:
             question_set_indices[article[ID]].append(index_name)
         else:
             question_set_indices[article[ID]] = [index_name]
+        count += 1
+        if count % 100 == 0:
+            print(f'{count} articles inserted')
     print('Articles have been inserted into the database')
     return question_set_indices, index_file
 
@@ -93,7 +103,4 @@ def load_and_store_articles(article_directory, es, bulk, config):
             dict: a list of Elasticsearch indices by the set of questions they are associated with
     """
     articles = read_jsonl_articles(article_directory)
-    try:
-        return store_articles(articles, es, bulk, config)
-    except:
-        print('an Elasticsearch error has occurred')
+    return store_articles(articles, es, bulk, config)

@@ -1,8 +1,8 @@
 import json
 import os
-from arc_benchmark.constants import ANSWER_CHOICES, ANSWER_KEY, BEING_ASKED, CHOICES, CORRECT_ANSWER, FILE, GLOBAL_ID, \
-    ID, JSONL_EXTENSION, JSON_EXTENSION, LABEL, NON_DIAGRAM_QUESTIONS, PARA_BODY, PARAGRAPHS, PROCESSED_TEXT, \
-    QUESTION, QUESTIONS, SQUID, STEM, TEXT, TITLE
+from arc_benchmark.constants import ANSWER_CHOICES, ANSWER_KEY, BEING_ASKED, CHECKPOINT_DIRECTORY, CHECKPOINT_FILE, \
+    CHOICES, CORRECT_ANSWER, FILE, GLOBAL_ID, ID, INDEX, JSONL_EXTENSION, JSON_EXTENSION, LABEL, \
+    NON_DIAGRAM_QUESTIONS, PARA_BODY, PARAGRAPHS, PROCESSED_TEXT, QUESTION, QUESTIONS, SQUID, STEM, TEXT, TITLE
 
 
 def process_article_line(article_line, filename):
@@ -138,3 +138,25 @@ def read_json_questions(filepath):
                 }
 
     return all_questions
+
+
+def create_or_load_checkpoints(config):
+    """
+
+    """
+    if not os.path.isdir(config[CHECKPOINT_DIRECTORY]):
+        os.mkdir(config[CHECKPOINT_DIRECTORY])
+
+    if not os.path.isfile(f'{config[CHECKPOINT_DIRECTORY]}/{config[CHECKPOINT_FILE]}'):
+        checkpoint_file = open(f'{config[CHECKPOINT_DIRECTORY]}/{config[CHECKPOINT_FILE]}', "w+")
+        completed_entries = {}
+    else:
+        checkpoint_read = open(f'{config[CHECKPOINT_DIRECTORY]}/{config[CHECKPOINT_FILE]}', "r")
+        completed_entries = {}
+        for line in checkpoint_read.readlines():
+            json_line = json.loads(line)
+            completed_entries[json_line[INDEX]] = json_line
+        checkpoint_read.close()
+        checkpoint_file = open(f'{config[CHECKPOINT_DIRECTORY]}/{config[CHECKPOINT_FILE]}', "a+")
+
+    return checkpoint_file, completed_entries

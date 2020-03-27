@@ -11,10 +11,10 @@ def create_or_clean_directory(config):
         Args:
             config (dict): config file specified properties to use in running the benchmark
     """
-    if os.path.isdir(config[BENCHMARK_SET_DIRECTORY]):
-        shutil.rmtree(config[BENCHMARK_SET_DIRECTORY])
+    if os.path.isdir(f'{os.getcwd()}{config[BENCHMARK_SET_DIRECTORY]}'):
+        shutil.rmtree(f'{os.getcwd()}{config[BENCHMARK_SET_DIRECTORY]}')
 
-    os.mkdir(config[BENCHMARK_SET_DIRECTORY])
+    os.mkdir(f'{os.getcwd()}{config[BENCHMARK_SET_DIRECTORY]}')
 
 
 def store_question_sets(question_sets, question_set_ids, config):
@@ -49,7 +49,7 @@ def store_question_sets(question_sets, question_set_ids, config):
             jsonl_string += ']}, "' + ANSWER_KEY + '": "' + question[ANSWER_KEY] + '"}'
             jsonl_questions.append(jsonl_string)
 
-        with open(f'{config[BENCHMARK_SET_DIRECTORY]}/{filename}', 'w') as jsonl_file:
+        with open(f'{os.getcwd()}{config[BENCHMARK_SET_DIRECTORY]}/{filename}', 'w') as jsonl_file:
             for question in jsonl_questions:
                 jsonl_file.write(f'{question}\n')
 

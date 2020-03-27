@@ -1,18 +1,25 @@
+import json
 import os
 import shutil
 import subprocess
+from arc_benchmark.load_files import create_or_load_checkpoints
 from arc_benchmark.constants import ARC_CHALLENGE_TEST, ARC_DATA_FULL_WIPE_KEEP_FILES, ARC_DATA_SMALL_WIPE_KEEP_FILES, \
-    ARC_DATA_SUBDIRECTORY, ARC_MODEL_SUBDIRECTORY, CONDA_ENVIRONMENT_NAME, EVALUATE_SOLVER_FILEPATH, METRICS
+    ARC_DATA_SUBDIRECTORY, ARC_MODEL_SUBDIRECTORY, CONDA_ENVIRONMENT_NAME, CORRECT, EVALUATE_SOLVER_FILEPATH, \
+    INCORRECT, INDEX, METRICS, QUESTION_SET, RESULTS, UNANSWERED
 
 
-def full_reset(arc_solver_directory, config):
+def clean_checkpoints(arc_solver_directory, config, full_reset=False):
     """
 
     """
     for filename in sorted(os.listdir(f'{arc_solver_directory}/{config[ARC_DATA_SUBDIRECTORY]}')):
-        if filename not in ARC_DATA_FULL_WIPE_KEEP_FILES:
+        if full_reset and filename not in ARC_DATA_FULL_WIPE_KEEP_FILES:
             os.remove(f'{arc_solver_directory}/{config[ARC_DATA_SUBDIRECTORY]}/{filename}')
-    print('Wipe complete')
+        elif filename not in ARC_DATA_SMALL_WIPE_KEEP_FILES:
+            os.remove(f'{arc_solver_directory}/{config[ARC_DATA_SUBDIRECTORY]}/{filename}')
+
+    if full_reset:
+        print('Full clean complete')
 
 
 def copy_test_set(arc_solver_directory, question_set_filepath, config):
@@ -25,7 +32,7 @@ def copy_test_set(arc_solver_directory, question_set_filepath, config):
     )
 
 
-def run_arc_on_index(arc_solver_directory, index, config):
+def run_arc_on_index(index, config):
     """
 
     """
@@ -49,9 +56,9 @@ def run_arc_on_index(arc_solver_directory, index, config):
     for line_index in range(len(output)):
         if METRICS in output[line_index]:
             return {
-                'correct': int(output[line_index + 4].split(':')[1].strip()),
-                'incorrect': int(output[line_index + 5].split(':')[1].strip())
-                + int(output[line_index + 6].split(':')[1].strip())
+                CORRECT: int(output[line_index + 4].split(':')[1].strip()),
+                INCORRECT: int(output[line_index + 5].split(':')[1].strip()),
+                UNANSWERED: int(output[line_index + 6].split(':')[1].strip())
             }
 
 
@@ -60,18 +67,27 @@ def evaluate_articles(index_files, question_set_indices, benchmark_set_filepaths
 
     """
     benchmark_results = {}
-    print(question_set_indices)
     print('##########################')
-    print(benchmark_set_filepaths)
+    checkpoint_file, completed_entries = create_or_load_checkpoints(config)
 
     benchmark_dir = os.getcwd()
     os.chdir(arc_solver_directory)
-    full_reset(arc_solver_directory, config)
-    copy_test_set(arc_solver_directory, f'{benchmark_dir}/question-sets/test-challenge-set.jsonl', config)
-    results = run_arc_on_index(arc_solver_directory, 'test-index', config)
-    #for question_set_id in question_set_indices.keys():
+    count = 0
+    for question_set_id in question_set_indices.keys():
+        clean_checkpoints(arc_solver_directory, config, full_reset=True)
+        copy_test_set(arc_solver_directory, f'{benchmark_dir}{benchmark_set_filepaths[question_set_id]}', config)
+        for index in question_set_indices[question_set_id]:
+            if index in completed_entries.keys():
+                benchmark_results[index_files[index]] = completed_entries[index]
+            else:
+                results = run_arc_on_index(index, config)
+                results_entry = {INDEX: index, QUESTION_SET: question_set_id, RESULTS: results}
+                print(results_entry)
+                checkpoint_file.write(json.dumps(results_entry) + '\n')
+                benchmark_results[index_files[index]] = {QUESTION_SET: question_set_id, RESULTS: results}
+                clean_checkpoints(arc_solver_directory, config)
+            count += 1
+            print(f'###The count is {count}###')
 
-        #copy_test_set(benchmark_set_filepaths[question_set_id], config)
-
-        #for index in question_set_indices[question_set_id]:
-            #run_arc_on_index(index, config)
+    checkpoint_file.close()
+    print(benchmark_results)

@@ -1,34 +1,40 @@
 host: 'localhost'
 port: 9200
-article_directory: 'path/to/article/file(s)'
-question_directory: 'path/to/question/file(s)'
-benchmark_set_directory: './question-sets'
-arc_solver_directory: 'path/to/ARC-Solvers'
+article_directory: '../generated_articles_2'
+question_directory: 'question-for-extraction/tqa_v1_train.json'
+benchmark_set_directory: '/question-sets'
+arc_solver_directory: '../ARC-Solvers'
 arc_data_subdirectory: 'data/ARC-V1-Feb2018/ARC-Challenge'
 arc_model_subdirectory: 'data/ARC-V1-Models-Aug2018/decompatt/'
-conda_environment_name: 'yourCondaEnvironment'
+conda_environment_name: 'allennlp'
+checkpoint_directory: 'checkpoints'
+checkpoint_file: 'arc_runner_checkpoints.jsonl'
 mapping: |-
   {
     "mappings": {
-      "sentence": {
-        "dynamic": "false",
-        "properties": {
-          "docId": {
-            "type": "keyword"
-          },
-          "text": {
-            "analyzer": "snowball",
-            "type": "text",
-            "fields": {
-              "raw": {
-                "type": "keyword"
-              }
+      "dynamic": "false",
+      "properties": {
+        "docId": {
+          "type": "keyword"
+        },
+        "text": {
+          "analyzer": "snowball",
+          "type": "text",
+          "fields": {
+            "raw": {
+              "type": "keyword"
             }
-          },
-          "tags": {
-            "type": "keyword"
           }
+        },
+        "tags": {
+          "type": "keyword"
         }
+      }
+    },
+    "settings" : {
+      "index" : {
+        "number_of_shards" : 1,
+        "number_of_replicas" : 0
       }
     }
   }
