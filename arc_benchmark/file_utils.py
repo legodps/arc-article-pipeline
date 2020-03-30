@@ -1,7 +1,7 @@
 import json
 import os
-from arc_benchmark.constants import ANSWER_CHOICES, ANSWER_KEY, BEING_ASKED, CHECKPOINT_DIRECTORY, CHECKPOINT_FILE, \
-    CHOICES, CORRECT_ANSWER, FILE, GLOBAL_ID, ID, INDEX, JSONL_EXTENSION, JSON_EXTENSION, LABEL, \
+from arc_benchmark.constants import ANSWER_CHOICES, ANSWER_KEY, ARC_CHECKPOINT_FILE, ARC_RESULTS_FILE, BEING_ASKED, \
+    CHECKPOINT_DIRECTORY, CHOICES, CORRECT_ANSWER, FILE, GLOBAL_ID, ID, INDEX, JSONL_EXTENSION, JSON_EXTENSION, LABEL, \
     NON_DIAGRAM_QUESTIONS, PARA_BODY, PARAGRAPHS, PROCESSED_TEXT, QUESTION, QUESTIONS, SQUID, STEM, TEXT, TITLE
 
 
@@ -140,23 +140,58 @@ def read_json_questions(filepath):
     return all_questions
 
 
-def create_or_load_checkpoints(config):
-    """
+def create_or_load_arc_checkpoint(config):
+    """ Loads in the JSONL checkpoint file if it exists or creates it if it doesn't
 
+        Args:
+            config (dict): config file specified properties to use in running the benchmark
+
+        Returns:
+            file: a file to write to during the ARC_Solver runs to keep checkpoints
+            object: an object containing any entries loaded from a checkpoint file
     """
     if not os.path.isdir(config[CHECKPOINT_DIRECTORY]):
         os.mkdir(config[CHECKPOINT_DIRECTORY])
 
-    if not os.path.isfile(f'{config[CHECKPOINT_DIRECTORY]}/{config[CHECKPOINT_FILE]}'):
-        checkpoint_file = open(f'{config[CHECKPOINT_DIRECTORY]}/{config[CHECKPOINT_FILE]}', "w+")
+    if not os.path.isfile(f'{config[CHECKPOINT_DIRECTORY]}/{config[ARC_CHECKPOINT_FILE]}'):
+        checkpoint_file = open(f'{config[CHECKPOINT_DIRECTORY]}/{config[ARC_CHECKPOINT_FILE]}', 'w+')
         completed_entries = {}
     else:
-        checkpoint_read = open(f'{config[CHECKPOINT_DIRECTORY]}/{config[CHECKPOINT_FILE]}', "r")
+        checkpoint_read = open(f'{config[CHECKPOINT_DIRECTORY]}/{config[ARC_CHECKPOINT_FILE]}', 'r')
         completed_entries = {}
         for line in checkpoint_read.readlines():
             json_line = json.loads(line)
             completed_entries[json_line[INDEX]] = json_line
         checkpoint_read.close()
-        checkpoint_file = open(f'{config[CHECKPOINT_DIRECTORY]}/{config[CHECKPOINT_FILE]}', "a+")
+        checkpoint_file = open(f'{config[CHECKPOINT_DIRECTORY]}/{config[ARC_CHECKPOINT_FILE]}', 'a+')
 
     return checkpoint_file, completed_entries
+
+
+def load_json(filename, config):
+    """ Imports a json formatted file, it will return None if the file does not exist
+
+        Args:
+            filename (str): the name of the file that would be stored in the checkpoints directory
+            config (dict): config file specified properties to use in running the benchmark
+
+        Returns:
+            various: Either None if the file does not exist or the python object equivalent of the json in the file
+    """
+    if not os.path.isdir(config[CHECKPOINT_DIRECTORY]) \
+            or not os.path.isfile(f'{config[CHECKPOINT_DIRECTORY]}/{filename}'):
+        return None
+
+    return json.load(open(f'{config[CHECKPOINT_DIRECTORY]}/{filename}', 'r'))
+
+
+def store_json(results, filename, config):
+    """ Writes results from a python object to a JSON file
+
+        Args:
+            results (object): a python object containing the results from running ARC Solver
+            filename (str): the name of the json file to write to
+            config (dict): config file specified properties to use in running the benchmark
+    """
+    json.dump(results, open(f'{config[CHECKPOINT_DIRECTORY]}/{filename}', 'w'))
+

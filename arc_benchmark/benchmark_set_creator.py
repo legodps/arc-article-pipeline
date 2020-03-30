@@ -1,6 +1,6 @@
 import os
 import shutil
-from arc_benchmark.load_files import read_json_questions
+from arc_benchmark.file_utils import read_json_questions
 from arc_benchmark.constants import ANSWER_KEY, ARC_CHALLENGE_TEST, BENCHMARK_SET_DIRECTORY, CHOICES, ID, LABEL, \
     QUESTION, STEM, TEXT
 

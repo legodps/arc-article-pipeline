@@ -8,7 +8,9 @@ arc_data_subdirectory: 'data/ARC-V1-Feb2018/ARC-Challenge'
 arc_model_subdirectory: 'data/ARC-V1-Models-Aug2018/decompatt/'
 conda_environment_name: 'allennlp'
 checkpoint_directory: 'checkpoints'
-checkpoint_file: 'arc_runner_checkpoints.jsonl'
+arc_checkpoint_file: 'arc_runner_checkpoints.jsonl'
+arc_results_file: 'arc_results.json'
+final_results_file: 'final_results.json'
 mapping: |-
   {
     "mappings": {

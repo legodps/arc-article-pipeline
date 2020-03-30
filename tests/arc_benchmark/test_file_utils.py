@@ -1,5 +1,5 @@
 from unittest import TestCase
-from arc_benchmark.load_files import process_article_line, process_article, read_jsonl_articles, retrieve_questions, \
+from arc_benchmark.file_utils import process_article_line, process_article, read_jsonl_articles, retrieve_questions, \
     read_json_questions
 
 

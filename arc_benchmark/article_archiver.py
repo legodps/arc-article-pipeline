@@ -1,6 +1,6 @@
 import re
 from elasticsearch.exceptions import TransportError
-from arc_benchmark.load_files import read_jsonl_articles
+from arc_benchmark.file_utils import read_jsonl_articles
 from arc_benchmark.constants import ELASTICSEARCH_DOC, ELASTICSEARCH_ID, ELASTICSEARCH_INDEX, ELASTICSEARCH_OP_TYPE, \
     ELASTICSEARCH_SOURCE, ELASTICSEARCH_TYPE, FILE, ID, INDEX, MAPPING, TEXT, TITLE
 
