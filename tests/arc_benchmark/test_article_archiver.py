@@ -25,24 +25,23 @@ class TestArticleArchiver(TestCase):
             'this is line one',
             'this is line two'
         ]
-        test_config = {'index_type': 'sentence'}
         expected_documents = [
             {
                 '_op_type': 'index',
                 '_index':  'article1',
                 '_id': 0,
-                '_type': 'sentence',
+                '_type': '_doc',
                 '_source': {'text': 'this is line one'.strip()}
             },
             {
                 '_op_type': 'index',
                 '_index':  'article1',
                 '_id': 1,
-                '_type': 'sentence',
+                '_type': '_doc',
                 '_source': {'text': 'this is line two'.strip()}
             }
         ]
-        document_generator = article_archiver.make_documents('article1', article_lines, test_config)
+        document_generator = article_archiver.make_documents('article1', article_lines, {})
         actual_documents = [article for article in document_generator]
         self.assertEqual(
             expected_documents,
@@ -119,18 +118,3 @@ class TestArticleArchiver(TestCase):
             call(index='test-articles-1-full-metal-coding', ignore=400, body={})
         ])
         mock_bulk.assert_called()
-
-    def test_load_and_store_articles_failure(self):
-        create_mock = Mock(side_effect=ElasticsearchException('death walks among you'))
-        es_mock = Mock(indices=Mock(create=create_mock))
-        mock_bulk = Mock(return_value=True)
-        fake_config = {'mapping': {}}
-        self.assertRaises(
-            ElasticsearchException,
-            article_archiver.load_and_store_articles(
-                'tests/data-files/articles/test_articles_1.jsonl',
-                es_mock,
-                mock_bulk,
-                fake_config
-            )
-        )

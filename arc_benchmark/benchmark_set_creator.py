@@ -69,7 +69,7 @@ def create_test_sets(question_directory, question_set_ids, config):
             config (dict): config file specified properties to use in running the benchmark
 
         Returns:
-            list: the filepaths of the saved question sets
+            dict: the filepaths of the saved question sets
     """
     create_or_clean_directory(config)
 

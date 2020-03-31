@@ -5,7 +5,7 @@ from unittest import TestCase
 from arc_benchmark.benchmark_set_creator import create_or_clean_directory, store_question_sets, create_test_sets
 
 
-fake_directory = 'fake_directory_dont_use'
+fake_directory = '/fake_directory_dont_use'
 config = {'benchmark_set_directory': fake_directory}
 question_sets = {
     '1': [
@@ -138,30 +138,33 @@ question_set_imported = [
 
 class TestQuestionSetCreator(TestCase):
     def test_create_or_clean_directory(self):
-        if os.path.isdir(fake_directory):
+        if os.path.isdir(f'{os.getcwd()}/{fake_directory}'):
             self.assertTrue(False, f'directory of {fake_directory} is already in use, dont use it >:(')
         else:
             create_or_clean_directory(config)
-            self.assertTrue(os.path.isdir(fake_directory), 'it should create a directory')
+            self.assertTrue(os.path.isdir(f'{os.getcwd()}/{fake_directory}'), 'it should create a directory')
 
-            open(f'{fake_directory}/empty_file.txt', 'a').close()
+            open(f'{os.getcwd()}/{fake_directory}/empty_file.txt', 'a').close()
             create_or_clean_directory(config)
             self.assertFalse(
-                os.path.isfile(f'{fake_directory}/empty_file.txt'),
+                os.path.isfile(f'{os.getcwd()}/{fake_directory}/empty_file.txt'),
                 'it should clean out any files in the configured test set directory'
             )
-            self.assertTrue(os.path.isdir(fake_directory))
-            os.rmdir(fake_directory)
+            self.assertTrue(os.path.isdir(f'{os.getcwd()}/{fake_directory}'))
+            os.rmdir(f'{os.getcwd()}/{fake_directory}')
             self.assertFalse(os.path.isdir(fake_directory))
 
     def test_store_question_sets(self):
-        if os.path.isdir(fake_directory):
+        if os.path.isdir(f'{os.getcwd()}/{fake_directory}'):
             self.assertTrue(False, f'directory of {fake_directory} is already in use, dont use it >:(')
         else:
             create_or_clean_directory(config)
 
             store_question_sets(question_sets, ['1', '3'], config)
-            filenames = [f'{fake_directory}/1-ARC-Challenge-Test.jsonl', f'{fake_directory}/3-ARC-Challenge-Test.jsonl']
+            filenames = [
+                f'{os.getcwd()}{fake_directory}/1-ARC-Challenge-Test.jsonl',
+                f'{os.getcwd()}{fake_directory}/3-ARC-Challenge-Test.jsonl'
+            ]
             questions = []
             for file_index in range(len(filenames)):
                 question_file_questions = []
@@ -177,30 +180,30 @@ class TestQuestionSetCreator(TestCase):
                 questions,
                 'it should store the questions as expected into jsonl files'
             )
-            shutil.rmtree(fake_directory)
+            shutil.rmtree(f'{os.getcwd()}/{fake_directory}')
 
     def test_create_test_sets(self):
-        if os.path.isdir(fake_directory):
+        if os.path.isdir(f'{os.getcwd()}/{fake_directory}'):
             self.assertTrue(False, f'directory of {fake_directory} is already in use, dont use it >:(')
         else:
             create_or_clean_directory(config)
-            open(f'{fake_directory}/empty_file.txt', 'a').close()
+            open(f'{os.getcwd()}/{fake_directory}/empty_file.txt', 'a').close()
             create_test_sets('tests/data-files/questions', ['abcd', 'ijkl'], config)
 
             self.assertTrue(
-                os.path.isdir(fake_directory),
+                os.path.isdir(f'{os.getcwd()}/{fake_directory}'),
                 'it should create the directory to store the test sets'
             )
             self.assertTrue(
-                os.path.isfile(f'{fake_directory}/abcd-ARC-Challenge-Test.jsonl'),
+                os.path.isfile(f'{os.getcwd()}/{fake_directory}/abcd-ARC-Challenge-Test.jsonl'),
                 'it should store 2 separate files of test sets'
             )
             self.assertTrue(
-                os.path.isfile(f'{fake_directory}/ijkl-ARC-Challenge-Test.jsonl'),
+                os.path.isfile(f'{os.getcwd()}/{fake_directory}/ijkl-ARC-Challenge-Test.jsonl'),
                 'it should store 2 separate files of test sets'
             )
             self.assertFalse(
-                os.path.isfile(f'{fake_directory}/empty_file.txt'),
+                os.path.isfile(f'{os.getcwd()}/{fake_directory}/empty_file.txt'),
                 'it should have deleted the old file during the directory clean and re-creation'
             )
-            shutil.rmtree(fake_directory)
+            shutil.rmtree(f'{os.getcwd()}/{fake_directory}')

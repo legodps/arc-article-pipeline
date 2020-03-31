@@ -1,5 +1,4 @@
 import re
-from elasticsearch.exceptions import TransportError
 from arc_benchmark.file_utils import read_jsonl_articles
 from arc_benchmark.constants import ELASTICSEARCH_DOC, ELASTICSEARCH_ID, ELASTICSEARCH_INDEX, ELASTICSEARCH_OP_TYPE, \
     ELASTICSEARCH_SOURCE, ELASTICSEARCH_TYPE, FILE, ID, INDEX, MAPPING, TEXT, TITLE
@@ -67,25 +66,18 @@ def store_articles(articles, es, bulk, config):
     """
     question_set_indices = {}
     index_file = {}
-    print(len(articles))
-    count = 0
+    print(f'A total of {len(articles)} articles to insert')
     for article in articles:
         line_array = re.split('[.?!]', article[TEXT])
         index_name = clean_article_name(article[TITLE])
         create_elasticsearch_index(index_name, es, config)
         make_documents(index_name, line_array, config)
-        try:
-            bulk(es, make_documents(index_name, line_array, config))
-        except TransportError:
-            print(index_name)
+        bulk(es, make_documents(index_name, line_array, config))
         index_file[index_name] = article[FILE]
         if article[ID] in question_set_indices:
             question_set_indices[article[ID]].append(index_name)
         else:
             question_set_indices[article[ID]] = [index_name]
-        count += 1
-        if count % 100 == 0:
-            print(f'{count} articles inserted')
     print('Articles have been inserted into the database')
     return question_set_indices, index_file
 

@@ -1,6 +1,11 @@
+import json
+import os
+import shutil
 from unittest import TestCase
 from arc_benchmark.file_utils import process_article_line, process_article, read_jsonl_articles, retrieve_questions, \
-    read_json_questions
+    read_json_questions, create_or_load_arc_checkpoint, load_json, store_json
+
+fake_directory = '/fake_directory_dont_use'
 
 
 class TestLoadFiles(TestCase):
@@ -378,3 +383,79 @@ class TestLoadFiles(TestCase):
             read_json_questions('tests/data-files/questions'),
             'it should load in all questions from a directory of question files'
         )
+
+    def test_create_or_load_arc_checkpoint_no_checkpoint(self):
+        if os.path.isdir(f'{os.getcwd()}/{fake_directory}'):
+            self.assertTrue(False, f'directory of {fake_directory} is already in use, dont use it >:(')
+        else:
+            checkpoint_filename = 'fake_checkpoint.jsonl'
+            checkpoint_file, completed_entries = create_or_load_arc_checkpoint({
+                'checkpoint_directory': f'{os.getcwd()}{fake_directory}',
+                'arc_checkpoint_file': checkpoint_filename
+            })
+            self.assertTrue(
+                os.path.isdir(f'{os.getcwd()}{fake_directory}'),
+                'It should create a directory and a blank checkpoint file'
+            )
+            self.assertEqual({}, completed_entries)
+            self.assertTrue(isinstance(checkpoint_file, object))
+            checkpoint_file.close()
+
+            shutil.rmtree(f'{os.getcwd()}/{fake_directory}')
+
+    def test_create_or_load_arc_checkpoint_extant_checkpoint(self):
+        if os.path.isdir(f'{os.getcwd()}{fake_directory}'):
+            self.assertTrue(False, f'directory of {fake_directory} is already in use, dont use it >:(')
+        else:
+            checkpoint_filename = 'fake_checkpoint.jsonl'
+            os.mkdir(f'{os.getcwd()}{fake_directory}')
+            file = open(f'{os.getcwd()}/{fake_directory}/{checkpoint_filename}', 'w')
+            file.write(json.dumps({'index': 'fake_index', 'one': 'two'}))
+            file.close()
+
+            checkpoint_file, completed_entries = create_or_load_arc_checkpoint({
+                'checkpoint_directory': f'{os.getcwd()}{fake_directory}',
+                'arc_checkpoint_file': checkpoint_filename
+            })
+            self.assertTrue(
+                os.path.isdir(f'{os.getcwd()}{fake_directory}'),
+                'It should load an existing checkpoint file'
+            )
+            self.assertEqual({'fake_index': {'index': 'fake_index', 'one': 'two'}}, completed_entries)
+            self.assertTrue(isinstance(checkpoint_file, object))
+            checkpoint_file.close()
+
+            shutil.rmtree(f'{os.getcwd()}/{fake_directory}')
+
+    def test_load_json_no_results(self):
+        if os.path.isdir(f'{os.getcwd()}{fake_directory}'):
+            self.assertTrue(False, f'directory of {fake_directory} is already in use, dont use it >:(')
+        else:
+            self.assertEqual(
+                None,
+                load_json('fake_results.json', {'checkpoint_directory': fake_directory}),
+                'It should return None if the checkpoint directory does not exist'
+            )
+
+            os.mkdir(f'{os.getcwd()}{fake_directory}')
+            self.assertEqual(
+                None,
+                load_json('fake_results.json', {'checkpoint_directory': fake_directory}),
+                'It should return None if the checkpoint directory exists but the json file does not'
+            )
+            os.rmdir(f'{os.getcwd()}{fake_directory}')
+
+    def test_load_json_results(self):
+        if os.path.isdir(f'{os.getcwd()}{fake_directory}'):
+            self.assertTrue(False, f'directory of {fake_directory} is already in use, dont use it >:(')
+        else:
+            results_filename = 'fake_results.json'
+            os.mkdir(f'{os.getcwd()}{fake_directory}')
+            file = open(f'{os.getcwd()}{fake_directory}/{results_filename}', 'w')
+            file.write(json.dumps({'one': 'two'}))
+            file.close()
+
+            results = load_json(results_filename, {'checkpoint_directory': f'{os.getcwd()}{fake_directory}'})
+            self.assertEqual({'one': 'two'}, results, 'It should load the json results from the checkpoint directory')
+
+            shutil.rmtree(f'{os.getcwd()}/{fake_directory}')

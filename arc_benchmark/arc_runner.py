@@ -3,14 +3,18 @@ import os
 import shutil
 import subprocess
 from arc_benchmark.file_utils import create_or_load_arc_checkpoint
-from arc_benchmark.constants import ARC_CHALLENGE_TEST, ARC_CHECKPOINT_FILE, ARC_DATA_FULL_WIPE_KEEP_FILES, \
-    ARC_DATA_SMALL_WIPE_KEEP_FILES, ARC_DATA_SUBDIRECTORY, ARC_MODEL_SUBDIRECTORY, CONDA_ENVIRONMENT_NAME, CORRECT, \
-    EVALUATE_SOLVER_FILEPATH, INCORRECT, INDEX, METRICS, QUESTION_SET, RESULTS, UNANSWERED
+from arc_benchmark.constants import ARC_CHALLENGE_TEST, ARC_DATA_FULL_WIPE_KEEP_FILES, ARC_DATA_SMALL_WIPE_KEEP_FILES, \
+    ARC_DATA_SUBDIRECTORY, ARC_MODEL_SUBDIRECTORY, CONDA_ENVIRONMENT_NAME, CORRECT, EVALUATE_SOLVER_FILEPATH, \
+    INCORRECT, INDEX, METRICS, QUESTION_SET, RESULTS, UNANSWERED
 
 
 def clean_checkpoints(arc_solver_directory, config, full_reset=False):
-    """
+    """ Cleans out files from the data directory, including the test set if it is a full reset
 
+        Args:
+            arc_solver_directory (str): the directory to the ARC-Solver project
+            config (dict): config file specified properties to use in running the benchmark
+            full_reset (bool): optional, whether or not the test set should be cleaned out with the other surplus files
     """
     for filename in sorted(os.listdir(f'{arc_solver_directory}/{config[ARC_DATA_SUBDIRECTORY]}')):
         if full_reset and filename not in ARC_DATA_FULL_WIPE_KEEP_FILES:
@@ -23,8 +27,12 @@ def clean_checkpoints(arc_solver_directory, config, full_reset=False):
 
 
 def copy_test_set(arc_solver_directory, question_set_filepath, config):
-    """
+    """ Copies a test set from the benchmark project to the ARC-Solver project
 
+        Args:
+            arc_solver_directory (str): the directory to the ARC-Solver project
+            question_set_filepath (str): the directory to the test sets in the benchmark project
+            config (dict): config file specified properties to use in running the benchmark
     """
     shutil.copyfile(
         question_set_filepath,
@@ -33,8 +41,15 @@ def copy_test_set(arc_solver_directory, question_set_filepath, config):
 
 
 def run_arc_on_index(index, config):
-    """
+    """ Runs the ARC-Solver on a questions set with a particular index
 
+        Args:
+            index (str): the Elasticsearch index that has an article designed for the question set
+            config (dict): config file specified properties to use in running the benchmark
+
+        Returns:
+            dict: a python object containing the number of correct, incorrect, and unanswered questions the ARC-Solver
+                run produced for a given set of questions and article
     """
     stdout = subprocess.run(
         [
@@ -63,8 +78,17 @@ def run_arc_on_index(index, config):
 
 
 def evaluate_articles(index_files, question_set_indices, benchmark_set_filepaths, arc_solver_directory, config):
-    """
+    """ Orchestrates the running of the ARC-Solver and organizes the results, along with keeping checkpoints
 
+        Args:
+            index_files (dict): a dictionary used to connect index names to their source article file
+            question_set_indices (dict): a dictionary used to connect question sets to indices
+            benchmark_set_filepaths (dict): a dictionary used to connect question sets to particular files
+            arc_solver_directory (str): the directory of the ARC-Solver project
+            config (dict): config file specified properties to use in running the benchmark
+
+        Returns:
+            dict: a dictionary containing the results for each index run on its associated question set
     """
     benchmark_results = {}
     print('##########################')
