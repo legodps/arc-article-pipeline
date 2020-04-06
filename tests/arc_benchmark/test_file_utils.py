@@ -459,3 +459,22 @@ class TestLoadFiles(TestCase):
             self.assertEqual({'one': 'two'}, results, 'It should load the json results from the checkpoint directory')
 
             shutil.rmtree(f'{os.getcwd()}/{fake_directory}')
+
+    def test_store_json_results(self):
+        if os.path.isdir(f'{os.getcwd()}{fake_directory}'):
+            self.assertTrue(False, f'directory of {fake_directory} is already in use, dont use it >:(')
+        else:
+            results_filename = 'fake_results.json'
+            results_object = {'fake': 'results'}
+            os.mkdir(f'{os.getcwd()}{fake_directory}')
+            store_json(results_object, results_filename, {'checkpoint_directory': f'{os.getcwd()}{fake_directory}'})
+            json_file = open(f'{os.getcwd()}{fake_directory}/{results_filename}', 'r')
+            saved_json = json.load(json_file)
+            json_file.close()
+            self.assertEqual(
+                results_object,
+                saved_json,
+                'it should save json to a specified file as given to it'
+            )
+
+            shutil.rmtree(f'{os.getcwd()}/{fake_directory}')

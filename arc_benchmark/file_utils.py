@@ -182,7 +182,10 @@ def load_json(filename, config):
             or not os.path.isfile(f'{config[CHECKPOINT_DIRECTORY]}/{filename}'):
         return None
 
-    return json.load(open(f'{config[CHECKPOINT_DIRECTORY]}/{filename}', 'r'))
+    json_file = open(f'{config[CHECKPOINT_DIRECTORY]}/{filename}', 'r')
+    parsed_file = json.load(json_file)
+    json_file.close()
+    return parsed_file
 
 
 def store_json(results, filename, config):
@@ -193,5 +196,6 @@ def store_json(results, filename, config):
             filename (str): the name of the json file to write to
             config (dict): config file specified properties to use in running the benchmark
     """
-    json.dump(results, open(f'{config[CHECKPOINT_DIRECTORY]}/{filename}', 'w'))
-
+    json_file = open(f'{config[CHECKPOINT_DIRECTORY]}/{filename}', 'w')
+    json.dump(results, json_file)
+    json_file.close()

@@ -51,7 +51,7 @@ def run_arc_on_index(index, config):
             dict: a python object containing the number of correct, incorrect, and unanswered questions the ARC-Solver
                 run produced for a given set of questions and article
     """
-    stdout = subprocess.run(
+    run_results = subprocess.run(
         [
             'conda',
             'run',
@@ -67,7 +67,7 @@ def run_arc_on_index(index, config):
         stderr=subprocess.DEVNULL,
         universal_newlines=True
     )
-    output = stdout.stdout.split('\n')
+    output = run_results.stdout.split('\n')
     for line_index in range(len(output)):
         if METRICS in output[line_index]:
             return {
@@ -100,9 +100,6 @@ def evaluate_articles(index_files, question_set_indices, benchmark_set_filepaths
         clean_checkpoints(arc_solver_directory, config, full_reset=True)
         copy_test_set(arc_solver_directory, f'{benchmark_dir}{benchmark_set_filepaths[question_set_id]}', config)
         for index in question_set_indices[question_set_id]:
-            if count > 2:
-                continue
-
             if not index_files[index] in benchmark_results:
                 benchmark_results[index_files[index]] = []
 
