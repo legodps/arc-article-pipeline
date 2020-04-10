@@ -49,9 +49,9 @@ class TestArticleArchiver(TestCase):
             'It should generate proper documents that are valid to insert into Elasticsearch '
         )
 
-    def test_store_articles(self):
+    def test_store_articles_not_exist(self):
         create_mock = Mock(return_value=True)
-        es_mock = Mock(indices=Mock(create=create_mock))
+        es_mock = Mock(indices=Mock(create=create_mock, exists=Mock(return_value=False)))
         mock_bulk = Mock(return_value=True)
         fake_articles = [
             {
@@ -74,7 +74,12 @@ class TestArticleArchiver(TestCase):
             }
         ]
         fake_config = {'mapping': {}}
-        question_set_indices, index_files = article_archiver.store_articles(fake_articles, es_mock, mock_bulk, fake_config)
+        question_set_indices, index_files = article_archiver.store_articles(
+            fake_articles,
+            es_mock,
+            mock_bulk,
+            fake_config
+        )
         self.assertEqual(
             {'manta': ['fake-article-1'], 'ray': ['fake-article-2', 'fake-article-3']},
             question_set_indices,
@@ -92,9 +97,54 @@ class TestArticleArchiver(TestCase):
         ])
         mock_bulk.assert_called()
 
+    def test_store_articles_does_exist(self):
+        exists_mock = Mock(return_value=True)
+        create_mock = Mock(return_value=True)
+        es_mock = Mock(indices=Mock(exists=exists_mock, create=create_mock))
+        mock_bulk = Mock(return_value=True)
+        fake_articles = [
+            {
+                'text': 'this is one fake article. It will be split into two lines',
+                'title': 'fake_article_1',
+                'id': 'manta',
+                'file': 'alpha'
+            },
+            {
+                'text': 'this is another fake article, but it will only result in one line',
+                'title': 'fake_article_2',
+                'id': 'ray',
+                'file': 'beta'
+            },
+            {
+                'text': 'this is a third fake article and it will be one line',
+                'title': 'fake_article_3',
+                'id': 'ray',
+                'file': 'beta'
+            }
+        ]
+        fake_config = {'mapping': {}}
+        question_set_indices, index_files = article_archiver.store_articles(
+            fake_articles,
+            es_mock,
+            mock_bulk,
+            fake_config
+        )
+        self.assertEqual(
+            {'manta': ['fake-article-1'], 'ray': ['fake-article-2', 'fake-article-3']},
+            question_set_indices,
+            'it should produce a list of article indices associated with their question set ids'
+        )
+        self.assertEqual(
+            {'fake-article-1': 'alpha', 'fake-article-2': 'beta', 'fake-article-3': 'beta'},
+            index_files,
+            'it should list indices with their associated files'
+        )
+        mock_bulk.assert_not_called()
+        create_mock.assert_not_called()
+
     def test_load_and_store_articles_success(self):
         create_mock = Mock(return_value=True)
-        es_mock = Mock(indices=Mock(create=create_mock))
+        es_mock = Mock(indices=Mock(create=create_mock, exists=Mock(return_value=False)))
         mock_bulk = Mock(return_value=True)
         fake_config = {'mapping': {}}
         question_set_indices, index_files = article_archiver.load_and_store_articles(

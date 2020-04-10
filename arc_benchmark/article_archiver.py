@@ -70,9 +70,10 @@ def store_articles(articles, es, bulk, config):
     for article in articles:
         line_array = re.split('[.?!]', article[TEXT])
         index_name = clean_article_name(article[TITLE])
-        create_elasticsearch_index(index_name, es, config)
-        make_documents(index_name, line_array, config)
-        bulk(es, make_documents(index_name, line_array, config))
+        if not es.indices.exists(index=index_name):
+            create_elasticsearch_index(index_name, es, config)
+            make_documents(index_name, line_array, config)
+            bulk(es, make_documents(index_name, line_array, config))
         index_file[index_name] = article[FILE]
         if article[ID] in question_set_indices:
             question_set_indices[article[ID]].append(index_name)

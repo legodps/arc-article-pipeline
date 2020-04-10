@@ -1,6 +1,6 @@
 host: 'localhost'
 port: 9200
-article_directory: '../generated_articles_2'
+article_directory: '../generated_articles'
 question_directory: 'question-for-extraction/tqa_v1_train.json'
 benchmark_set_directory: '/question-sets'
 arc_solver_directory: '../ARC-Solvers'
