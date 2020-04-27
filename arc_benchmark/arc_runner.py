@@ -64,17 +64,25 @@ def run_arc_on_index(index, config):
             f'{index}'
         ],
         stdout=subprocess.PIPE,
-        stderr=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
         universal_newlines=True
     )
     output = run_results.stdout.split('\n')
+    results = {}
     for line_index in range(len(output)):
         if METRICS in output[line_index]:
-            return {
+            results = {
                 CORRECT: int(output[line_index + 4].split(':')[1].strip()),
                 INCORRECT: int(output[line_index + 5].split(':')[1].strip()),
                 UNANSWERED: int(output[line_index + 6].split(':')[1].strip())
             }
+    if len(results.keys()) == 0:
+        print('************')
+        print(run_results.stdout)
+        print('************')
+        print(run_results.stderr)
+        print('************')
+    return results
 
 
 def evaluate_articles(index_files, question_set_indices, benchmark_set_filepaths, arc_solver_directory, config):
@@ -114,7 +122,7 @@ def evaluate_articles(index_files, question_set_indices, benchmark_set_filepaths
                 benchmark_results[index_files[index]].append({QUESTION_SET: question_set_id, RESULTS: results})
                 clean_checkpoints(arc_solver_directory, config)
             count += 1
-            print(f'###The count is {count}###')
+            # print(f'###The count is {count}###')
 
     checkpoint_file.close()
     os.chdir(benchmark_dir)

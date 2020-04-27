@@ -70,8 +70,9 @@ def create_test_sets(question_directory, question_set_ids, config):
 
         Returns:
             dict: the filepaths of the saved question sets
+            dict: the count of questions by the number of possible answers
     """
     create_or_clean_directory(config)
 
-    question_sets = read_json_questions(question_directory)
-    return store_question_sets(question_sets, question_set_ids, config)
+    question_sets, question_answer_counts = read_json_questions(question_directory)
+    return store_question_sets(question_sets, question_set_ids, config), question_answer_counts

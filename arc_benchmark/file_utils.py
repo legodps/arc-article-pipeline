@@ -83,7 +83,9 @@ def retrieve_questions(filepath):
 
         Returns:
             dict: groups of questions to be stored for later benchmarking
+            dict: the count of questions by the number of possible answers
     """
+    question_answer_count = {}
     filename = filepath if JSON_EXTENSION in filepath else f'{filepath}{JSON_EXTENSION}'
     with open(filename) as question_file:
         question_sets = json.load(question_file)
@@ -94,6 +96,7 @@ def retrieve_questions(filepath):
         parsed_questions[question_set_index] = []
         question_id = 0
         for question_key in question_set[QUESTIONS][NON_DIAGRAM_QUESTIONS].keys():
+            answer_count = 0
             digested_question = {
                 ID: str(question_id),
                 QUESTION: {
@@ -105,6 +108,7 @@ def retrieve_questions(filepath):
                     question_set[QUESTIONS][NON_DIAGRAM_QUESTIONS][question_key][CORRECT_ANSWER][PROCESSED_TEXT]
             }
             for answer_key in question_set[QUESTIONS][NON_DIAGRAM_QUESTIONS][question_key][ANSWER_CHOICES].keys():
+                answer_count += 1
                 digested_question[QUESTION][CHOICES].append({
                     TEXT: question_set[QUESTIONS][NON_DIAGRAM_QUESTIONS][question_key]
                                       [ANSWER_CHOICES][answer_key][PROCESSED_TEXT],
@@ -112,8 +116,34 @@ def retrieve_questions(filepath):
                 })
             parsed_questions[question_set_index].append(digested_question)
             question_id += 1
+            if str(answer_count) not in question_answer_count:
+                question_answer_count[str(answer_count)] = 1
+            else:
+                question_answer_count[str(answer_count)] += 1
 
-    return parsed_questions
+    return parsed_questions, question_answer_count
+
+
+def add_question_counts(total_counts, new_counts):
+    """ Combines two python dicts of counts, summing over existing keys
+
+        Args:
+            total_counts (dict): the previous total
+            new_counts (dict): the new counts retrieved from a question file
+
+        Returns:
+            dict: the combined totals from total_counts being summed with new_counts
+    """
+    if len(total_counts.keys()) == 0:
+        return new_counts
+
+    for answer_count in new_counts.keys():
+        if answer_count not in total_counts:
+            total_counts[answer_count] = new_counts[answer_count]
+        else:
+            total_counts[answer_count] += new_counts[answer_count]
+
+    return total_counts
 
 
 def read_json_questions(filepath):
@@ -124,20 +154,26 @@ def read_json_questions(filepath):
 
         Returns:
             dict: all sets of grouped questions
-
+            dict: the total number of questions by the number of possible answers
     """
     all_questions = {}
     try:
-        all_questions = retrieve_questions(filepath)
+        all_questions, total_question_answer_counts = retrieve_questions(filepath)
     except (IsADirectoryError, FileNotFoundError):
+        total_question_answer_counts = {}
         for filename in sorted(os.listdir(filepath)):
             if JSON_EXTENSION in filename:
+                new_questions, new_question_answer_counts = retrieve_questions(f'{filepath}/{filename}')
                 all_questions = {
                     **all_questions,
-                    **retrieve_questions(f'{filepath}/{filename}')
+                    **new_questions
                 }
+                total_question_answer_counts = add_question_counts(
+                    total_question_answer_counts,
+                    new_question_answer_counts
+                )
 
-    return all_questions
+    return all_questions, total_question_answer_counts
 
 
 def create_or_load_arc_checkpoint(config):

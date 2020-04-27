@@ -73,12 +73,16 @@ def run_arc_benchmark(config_file, article_directory, question_directory, arc_so
         print(f'Do not set {BENCHMARK_SET_DIRECTORY} to any critical or already used directories.')
     else:
         benchmark_results = load_json(ARC_RESULTS_FILE, config)
-        if not benchmark_results:
-            es = Elasticsearch(hosts=[{HOST: config[HOST], PORT: config[PORT]}], retries=3, timeout=60)
-            print('Connection to Elasticsearch cluster established')
 
-            question_set_indices, index_files = load_and_store_articles(article_filepath, es, bulk, config)
-            benchmark_set_filepaths = create_test_sets(question_filepath, question_set_indices.keys(), config)
+        es = Elasticsearch(hosts=[{HOST: config[HOST], PORT: config[PORT]}], retries=3, timeout=60)
+        print('Connection to Elasticsearch cluster established')
+        question_set_indices, index_files = load_and_store_articles(article_filepath, es, bulk, config)
+        benchmark_set_filepaths, question_answer_counts = create_test_sets(
+            question_filepath,
+            question_set_indices.keys(),
+            config
+        )
+        if not benchmark_results:
             benchmark_results = evaluate_articles(
                 index_files,
                 question_set_indices,
@@ -89,7 +93,7 @@ def run_arc_benchmark(config_file, article_directory, question_directory, arc_so
             store_json(benchmark_results, ARC_RESULTS_FILE, config)
 
         if not os.path.isfile(f'{config[CHECKPOINT_DIRECTORY]}/{config[FINAL_RESULTS_FILE]}'):
-            analyze_results(benchmark_results, config)
+            analyze_results(benchmark_results, question_answer_counts, config)
             print('analysis complete')
 
 
