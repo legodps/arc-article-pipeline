@@ -3,9 +3,9 @@ import os
 import shutil
 import subprocess
 from arc_benchmark.file_utils import create_or_load_arc_checkpoint
-from arc_benchmark.constants import ARC_CHALLENGE_TEST, ARC_DATA_FULL_WIPE_KEEP_FILES, ARC_DATA_SMALL_WIPE_KEEP_FILES, \
-    ARC_DATA_SUBDIRECTORY, ARC_MODEL_SUBDIRECTORY, CONDA_ENVIRONMENT_NAME, CORRECT, EVALUATE_SOLVER_FILEPATH, \
-    INCORRECT, INDEX, METRICS, QUESTION_SET, RESULTS, UNANSWERED
+from arc_benchmark.constants import ARC_CHALLENGE_TEST, ARC_CORPUS_INDEX, ARC_DATA_FULL_WIPE_KEEP_FILES, \
+    ARC_DATA_SMALL_WIPE_KEEP_FILES, ARC_DATA_SUBDIRECTORY, ARC_MODEL_SUBDIRECTORY, CONDA_ENVIRONMENT_NAME, CORRECT, \
+    EVALUATE_SOLVER_FILEPATH, INCORRECT, INDEX, METRICS, QUESTION_SET, RESULTS, UNANSWERED
 
 
 def clean_checkpoints(arc_solver_directory, config, full_reset=False):
@@ -103,28 +103,59 @@ def evaluate_articles(index_files, question_set_indices, benchmark_set_filepaths
     checkpoint_file, completed_entries = create_or_load_arc_checkpoint(config)
     benchmark_dir = os.getcwd()
     os.chdir(arc_solver_directory)
-    count = 0
     for question_set_id in question_set_indices.keys():
         clean_checkpoints(arc_solver_directory, config, full_reset=True)
+        if question_set_id not in benchmark_set_filepaths \
+                or not os.path.isfile(f'{benchmark_dir}{benchmark_set_filepaths[question_set_id]}'):
+            print(f'no question set found for {question_set_id}')
+            continue
         copy_test_set(arc_solver_directory, f'{benchmark_dir}{benchmark_set_filepaths[question_set_id]}', config)
         for index in question_set_indices[question_set_id]:
             if not index_files[index] in benchmark_results:
                 benchmark_results[index_files[index]] = []
 
-            if index in completed_entries.keys():
-                benchmark_results[index_files[index]].append(completed_entries[index])
+            if (index, question_set_id) in completed_entries.keys():
+                benchmark_results[index_files[index]].append(completed_entries[(index, question_set_id)])
             else:
+                print(f'question_set_id: {question_set_id} index: {index}')
                 results = run_arc_on_index(index, config)
                 results_entry = {INDEX: index, QUESTION_SET: question_set_id, RESULTS: results}
-                print(results_entry)
                 checkpoint_file.write(json.dumps(results_entry) + '\n')
 
                 benchmark_results[index_files[index]].append({QUESTION_SET: question_set_id, RESULTS: results})
                 clean_checkpoints(arc_solver_directory, config)
-            count += 1
-            # print(f'###The count is {count}###')
 
     checkpoint_file.close()
     os.chdir(benchmark_dir)
     return benchmark_results
 
+
+def evaluate_arc_index(benchmark_results, question_set_indices, benchmark_set_filepaths, arc_solver_directory, config):
+    """
+
+    """
+    checkpoint_file, completed_entries = create_or_load_arc_checkpoint(config)
+    benchmark_dir = os.getcwd()
+    os.chdir(arc_solver_directory)
+    benchmark_results[config[ARC_CORPUS_INDEX]] = []
+    for question_set_id in question_set_indices.keys():
+        clean_checkpoints(arc_solver_directory, config, full_reset=True)
+        if question_set_id not in benchmark_set_filepaths \
+                or not os.path.isfile(f'{benchmark_dir}{benchmark_set_filepaths[question_set_id]}'):
+            print(f'no question set found for {question_set_id}')
+            continue
+        copy_test_set(arc_solver_directory, f'{benchmark_dir}{benchmark_set_filepaths[question_set_id]}', config)
+        if (config[ARC_CORPUS_INDEX], question_set_id) in completed_entries.keys():
+            benchmark_results[config[ARC_CORPUS_INDEX]].append(
+                completed_entries[config[ARC_CORPUS_INDEX], question_set_id]
+            )
+        else:
+            results = run_arc_on_index(config[ARC_CORPUS_INDEX], config)
+            results_entry = {INDEX: config[ARC_CORPUS_INDEX], QUESTION_SET: question_set_id, RESULTS: results}
+            checkpoint_file.write(json.dumps(results_entry) + '\n')
+            benchmark_results[config[ARC_CORPUS_INDEX]].append({QUESTION_SET: question_set_id, RESULTS: results})
+            clean_checkpoints(arc_solver_directory, config)
+
+    checkpoint_file.close()
+    os.chdir(benchmark_dir)
+    return benchmark_results

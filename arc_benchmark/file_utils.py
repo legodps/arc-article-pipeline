@@ -2,7 +2,8 @@ import json
 import os
 from arc_benchmark.constants import ANSWER_CHOICES, ANSWER_KEY, ARC_CHECKPOINT_FILE, ARC_RESULTS_FILE, BEING_ASKED, \
     CHECKPOINT_DIRECTORY, CHOICES, CORRECT_ANSWER, FILE, GLOBAL_ID, ID, INDEX, JSONL_EXTENSION, JSON_EXTENSION, LABEL, \
-    NON_DIAGRAM_QUESTIONS, PARA_BODY, PARAGRAPHS, PROCESSED_TEXT, QUESTION, QUESTIONS, SQUID, STEM, TEXT, TITLE
+    NON_DIAGRAM_QUESTIONS, PARA_BODY, PARAGRAPHS, PROCESSED_TEXT, QUESTION, QUESTION_DIRECTORY, QUESTION_SET, \
+    QUESTIONS, SQUID, STEM, TEXT, TITLE, TQA
 
 
 def process_article_line(article_line, filename):
@@ -74,7 +75,7 @@ def read_jsonl_articles(filepath):
     return all_articles
 
 
-def retrieve_questions(filepath):
+def retrieve_questions(filepath, question_set_ids):
     """ Retrieves questions grouped by an ID to be used in benchmarking sets of articles. This extraction was designed
         for questions from the TQA dataset.
 
@@ -86,14 +87,15 @@ def retrieve_questions(filepath):
             dict: the count of questions by the number of possible answers
     """
     question_answer_count = {}
+    question_count = 0
     filename = filepath if JSON_EXTENSION in filepath else f'{filepath}{JSON_EXTENSION}'
     with open(filename) as question_file:
         question_sets = json.load(question_file)
 
     parsed_questions = {}
     for question_set in question_sets:
+        temp_question_count = 0
         question_set_index = question_set[GLOBAL_ID]
-        parsed_questions[question_set_index] = []
         question_id = 0
         for question_key in question_set[QUESTIONS][NON_DIAGRAM_QUESTIONS].keys():
             answer_count = 0
@@ -114,13 +116,18 @@ def retrieve_questions(filepath):
                                       [ANSWER_CHOICES][answer_key][PROCESSED_TEXT],
                     LABEL: answer_key
                 })
-            parsed_questions[question_set_index].append(digested_question)
-            question_id += 1
-            if str(answer_count) not in question_answer_count:
-                question_answer_count[str(answer_count)] = 1
-            else:
-                question_answer_count[str(answer_count)] += 1
-
+            if question_set_index in question_set_ids:
+                question_count += 1
+                temp_question_count += 1
+                if question_set_index in parsed_questions:
+                    parsed_questions[question_set_index].append(digested_question)
+                else:
+                    parsed_questions[question_set_index] = [digested_question]
+                question_id += 1
+                if str(answer_count) not in question_answer_count:
+                    question_answer_count[str(answer_count)] = 1
+                else:
+                    question_answer_count[str(answer_count)] += 1
     return parsed_questions, question_answer_count
 
 
@@ -146,11 +153,12 @@ def add_question_counts(total_counts, new_counts):
     return total_counts
 
 
-def read_json_questions(filepath):
+def read_json_questions(filepath, question_set_ids):
     """ Opens the file(s) at a given filepath, extracts the questions, and returns them
 
         Args:
             filepath (str): a path to a singular, or directory of, JSON question files
+            question_set_ids (list): a list of all the questions that should be loaded in
 
         Returns:
             dict: all sets of grouped questions
@@ -158,12 +166,15 @@ def read_json_questions(filepath):
     """
     all_questions = {}
     try:
-        all_questions, total_question_answer_counts = retrieve_questions(filepath)
+        all_questions, total_question_answer_counts = retrieve_questions(filepath, question_set_ids)
     except (IsADirectoryError, FileNotFoundError):
         total_question_answer_counts = {}
         for filename in sorted(os.listdir(filepath)):
             if JSON_EXTENSION in filename:
-                new_questions, new_question_answer_counts = retrieve_questions(f'{filepath}/{filename}')
+                new_questions, new_question_answer_counts = retrieve_questions(
+                    f'{filepath}/{filename}',
+                    question_set_ids
+                )
                 all_questions = {
                     **all_questions,
                     **new_questions
@@ -197,7 +208,7 @@ def create_or_load_arc_checkpoint(config):
         completed_entries = {}
         for line in checkpoint_read.readlines():
             json_line = json.loads(line)
-            completed_entries[json_line[INDEX]] = json_line
+            completed_entries[(json_line[INDEX], json_line[QUESTION_SET])] = json_line
         checkpoint_read.close()
         checkpoint_file = open(f'{config[CHECKPOINT_DIRECTORY]}/{config[ARC_CHECKPOINT_FILE]}', 'a+')
 
@@ -235,3 +246,26 @@ def store_json(results, filename, config):
     json_file = open(f'{config[CHECKPOINT_DIRECTORY]}/{filename}', 'w')
     json.dump(results, json_file)
     json_file.close()
+
+
+def load_tqa_articles(question_set_indices, config):
+    """
+
+    """
+    articles = []
+    tqa_file = open(config[QUESTION_DIRECTORY], 'r')
+    tqa_dataset = json.load(tqa_file)
+    tqa_file.close()
+
+    for question_set in tqa_dataset:
+        if question_set['globalID'] in question_set_indices:
+            tqa_text = ''
+            for topic in question_set['topics'].keys():
+                tqa_text += question_set['topics'][topic]['content']['text']
+            articles.append({
+                TITLE: f'{TQA}-{question_set["lessonName"].lower()}',
+                TEXT: tqa_text,
+                ID: question_set['globalID'],
+                FILE: config[QUESTION_DIRECTORY].split('/')[-1]
+            })
+    return articles

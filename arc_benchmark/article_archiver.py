@@ -1,7 +1,7 @@
 import re
-from arc_benchmark.file_utils import read_jsonl_articles
+from arc_benchmark.file_utils import read_jsonl_articles, load_tqa_articles
 from arc_benchmark.constants import ELASTICSEARCH_DOC, ELASTICSEARCH_ID, ELASTICSEARCH_INDEX, ELASTICSEARCH_OP_TYPE, \
-    ELASTICSEARCH_SOURCE, ELASTICSEARCH_TYPE, FILE, ID, INDEX, MAPPING, TEXT, TITLE
+    ELASTICSEARCH_SOURCE, ELASTICSEARCH_TYPE, FILE, ID, INDEX, MAPPING, QUESTION_DIRECTORY, TEXT, TITLE
 
 
 def clean_article_name(article_name):
@@ -97,3 +97,20 @@ def load_and_store_articles(article_directory, es, bulk, config):
     """
     articles = read_jsonl_articles(article_directory)
     return store_articles(articles, es, bulk, config)
+
+
+def combine_indices(new_question_set_indices, question_set_indices):
+    """
+
+    """
+    for question_set_key in question_set_indices:
+        question_set_indices[question_set_key].append(new_question_set_indices[question_set_key][0])
+    return question_set_indices
+
+def load_and_store_tqa_articles(question_set_indices, es, bulk, config):
+    """
+
+    """
+    articles = load_tqa_articles(question_set_indices, config)
+    tqa_question_set_indices, index_files = store_articles(articles, es, bulk, config)
+    return combine_indices(tqa_question_set_indices, question_set_indices), index_files

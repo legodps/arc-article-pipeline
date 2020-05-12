@@ -40,7 +40,9 @@ SQUID = 'squid'
 STEM = 'stem'
 TEXT = 'text'
 TITLE = 'title'
+TQA = 'tqa'
 UNANSWERED = 'unanswered'
+ARC_CORPUS_INDEX = 'arc_corpus_index'
 
 # Elasticsearch mapping values
 ELASTICSEARCH_DOC = '_doc'

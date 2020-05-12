@@ -5,9 +5,9 @@ from elasticsearch.helpers import bulk
 from arc_benchmark.file_utils import load_json, store_json
 from arc_benchmark.config_loader import load_config, override_config
 from arc_benchmark.benchmark_set_creator import create_test_sets
-from arc_benchmark.article_archiver import load_and_store_articles
-from arc_benchmark.arc_runner import evaluate_articles
-from arc_benchmark.results_analysis import analyze_results
+from arc_benchmark.article_archiver import load_and_store_articles, load_and_store_tqa_articles
+from arc_benchmark.arc_runner import evaluate_articles, evaluate_arc_index
+from arc_benchmark.results_analysis import analyze_results, analyze_questions
 from arc_benchmark.constants import ARC_BENCHMARK_DIRECTORY, ARC_RESULTS_FILE, ARC_SOLVER_DIRECTORY, \
     ARTICLE_DIRECTORY, BENCHMARK_CONFIG_YAML, BENCHMARK_SET_DIRECTORY, CHECKPOINT_DIRECTORY, CONFIG_FILE, \
     ENV_DIRECTORY, FINAL_RESULTS_FILE, HOST, HTMLCOV_DIRECTORY, PORT, QUESTION_DIRECTORY, TESTS_DIRECTORY
@@ -77,6 +77,12 @@ def run_arc_benchmark(config_file, article_directory, question_directory, arc_so
         es = Elasticsearch(hosts=[{HOST: config[HOST], PORT: config[PORT]}], retries=3, timeout=60)
         print('Connection to Elasticsearch cluster established')
         question_set_indices, index_files = load_and_store_articles(article_filepath, es, bulk, config)
+        question_set_indices, tqa_index = load_and_store_tqa_articles(question_set_indices, es, bulk, config)
+
+        index_files = {
+            **index_files,
+            **tqa_index
+        }
         benchmark_set_filepaths, question_answer_counts = create_test_sets(
             question_filepath,
             question_set_indices.keys(),
@@ -90,11 +96,20 @@ def run_arc_benchmark(config_file, article_directory, question_directory, arc_so
                 arc_solver_filepath,
                 config
             )
+            benchmark_results = evaluate_arc_index(
+                benchmark_results,
+                question_set_indices,
+                benchmark_set_filepaths,
+                arc_solver_filepath,
+                config
+            )
             store_json(benchmark_results, ARC_RESULTS_FILE, config)
 
         if not os.path.isfile(f'{config[CHECKPOINT_DIRECTORY]}/{config[FINAL_RESULTS_FILE]}'):
             analyze_results(benchmark_results, question_answer_counts, config)
             print('analysis complete')
+
+        analyze_questions(benchmark_results, config)
 
 
 args = parser.parse_args()
