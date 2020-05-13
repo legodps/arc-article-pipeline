@@ -130,5 +130,5 @@ def analyze_questions(benchmark_results, config):
 
         #question_totals[question_set_id]['std_dev_correct'] =
     #print(question_totals)
-    for question_set_id in question_totals.keys():
-        print(question_totals[question_set_id]['average_percent_correct'])
+    #for question_set_id in question_totals.keys():
+    #    print(question_totals[question_set_id]['average_percent_correct'])

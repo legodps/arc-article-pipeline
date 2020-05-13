@@ -260,8 +260,21 @@ def load_tqa_articles(question_set_indices, config):
     for question_set in tqa_dataset:
         if question_set['globalID'] in question_set_indices:
             tqa_text = ''
+
             for topic in question_set['topics'].keys():
                 tqa_text += question_set['topics'][topic]['content']['text']
+            for topic in question_set['adjunctTopics'].keys():
+                if 'content' in question_set['adjunctTopics'][topic] \
+                        and 'text' in question_set['adjunctTopics'][topic]['content']:
+                    tqa_text += question_set['adjunctTopics'][topic]['content']['text']
+            for diagram in question_set['diagramAnnotations'].keys():
+                for annotation in question_set['diagramAnnotations'][diagram]:
+                    if 'text' in annotation:
+                        tqa_text += f' {annotation["text"]}.'
+            for diagram in question_set['instructionalDiagrams'].keys():
+                if 'processedText' in question_set['instructionalDiagrams'][diagram]:
+                    tqa_text += question_set['instructionalDiagrams'][diagram]['processedText']
+
             articles.append({
                 TITLE: f'{TQA}-{question_set["lessonName"].lower()}',
                 TEXT: tqa_text,
