@@ -3,9 +3,10 @@ import os
 import shutil
 import subprocess
 from arc_benchmark.file_utils import create_or_load_arc_checkpoint
-from arc_benchmark.constants import ARC_CHALLENGE_TEST, ARC_CORPUS_INDEX, ARC_DATA_FULL_WIPE_KEEP_FILES, \
-    ARC_DATA_SMALL_WIPE_KEEP_FILES, ARC_DATA_SUBDIRECTORY, ARC_MODEL_SUBDIRECTORY, CONDA_ENVIRONMENT_NAME, CORRECT, \
-    EVALUATE_SOLVER_FILEPATH, INCORRECT, INDEX, METRICS, QUESTION_SET, RESULTS, UNANSWERED
+from arc_benchmark.constants import ADDENDUM_RESULTS, ARC_CHALLENGE_TEST, ARC_CORPUS_INDEX, \
+    ARC_DATA_FULL_WIPE_KEEP_FILES, ARC_DATA_SMALL_WIPE_KEEP_FILES, ARC_DATA_SUBDIRECTORY, ARC_MODEL_SUBDIRECTORY, \
+    CONDA_ENVIRONMENT_NAME, CORRECT, EVALUATE_SOLVER_FILEPATH, INCORRECT, INDEX, INDIVIDUAL_RESULTS, METRICS, \
+    QUESTION_SET, RESULTS, UNANSWERED
 
 
 def clean_checkpoints(arc_solver_directory, config, full_reset=False):
@@ -69,6 +70,7 @@ def run_arc_on_index(index, config):
     )
     output = run_results.stdout.split('\n')
     results = {}
+    individual_results = {}
     for line_index in range(len(output)):
         if METRICS in output[line_index]:
             results = {
@@ -76,13 +78,15 @@ def run_arc_on_index(index, config):
                 INCORRECT: int(output[line_index + 5].split(':')[1].strip()),
                 UNANSWERED: int(output[line_index + 6].split(':')[1].strip())
             }
+        if ADDENDUM_RESULTS in output[line_index]:
+            individual_results = json.loads(output[line_index + 1])
     if len(results.keys()) == 0:
         print('************')
         print(run_results.stdout)
         print('************')
         print(run_results.stderr)
         print('************')
-    return results
+    return results, individual_results
 
 
 def evaluate_articles(index_files, question_set_indices, benchmark_set_filepaths, arc_solver_directory, config):
@@ -117,12 +121,20 @@ def evaluate_articles(index_files, question_set_indices, benchmark_set_filepaths
             if (index, question_set_id) in completed_entries.keys():
                 benchmark_results[index_files[index]].append(completed_entries[(index, question_set_id)])
             else:
-                print(f'question_set_id: {question_set_id} index: {index}')
-                results = run_arc_on_index(index, config)
-                results_entry = {INDEX: index, QUESTION_SET: question_set_id, RESULTS: results}
+                results, individual_results = run_arc_on_index(index, config)
+                results_entry = {
+                    INDEX: index,
+                    QUESTION_SET: question_set_id,
+                    RESULTS: results,
+                    INDIVIDUAL_RESULTS: individual_results
+                }
                 checkpoint_file.write(json.dumps(results_entry) + '\n')
 
-                benchmark_results[index_files[index]].append({QUESTION_SET: question_set_id, RESULTS: results})
+                benchmark_results[index_files[index]].append({
+                    QUESTION_SET: question_set_id,
+                    RESULTS: results,
+                    INDIVIDUAL_RESULTS: individual_results
+                })
                 clean_checkpoints(arc_solver_directory, config)
 
     checkpoint_file.close()
@@ -150,10 +162,19 @@ def evaluate_arc_index(benchmark_results, question_set_indices, benchmark_set_fi
                 completed_entries[config[ARC_CORPUS_INDEX], question_set_id]
             )
         else:
-            results = run_arc_on_index(config[ARC_CORPUS_INDEX], config)
-            results_entry = {INDEX: config[ARC_CORPUS_INDEX], QUESTION_SET: question_set_id, RESULTS: results}
+            results, individual_results = run_arc_on_index(config[ARC_CORPUS_INDEX], config)
+            results_entry = {
+                INDEX: config[ARC_CORPUS_INDEX],
+                QUESTION_SET: question_set_id,
+                RESULTS: results,
+                INDIVIDUAL_RESULTS: individual_results
+            }
             checkpoint_file.write(json.dumps(results_entry) + '\n')
-            benchmark_results[config[ARC_CORPUS_INDEX]].append({QUESTION_SET: question_set_id, RESULTS: results})
+            benchmark_results[config[ARC_CORPUS_INDEX]].append({
+                QUESTION_SET: question_set_id,
+                RESULTS: results,
+                INDIVIDUAL_RESULTS: individual_results
+            })
             clean_checkpoints(arc_solver_directory, config)
 
     checkpoint_file.close()

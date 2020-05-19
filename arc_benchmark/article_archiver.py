@@ -66,7 +66,6 @@ def store_articles(articles, es, bulk, config):
     """
     question_set_indices = {}
     index_file = {}
-    print(f'A total of {len(articles)} articles to insert')
     for article in articles:
         line_array = re.split('[.?!]', article[TEXT])
         index_name = clean_article_name(article[TITLE])
@@ -79,7 +78,6 @@ def store_articles(articles, es, bulk, config):
             question_set_indices[article[ID]].append(index_name)
         else:
             question_set_indices[article[ID]] = [index_name]
-    print('Articles have been inserted into the database')
     return question_set_indices, index_file
 
 
@@ -106,6 +104,7 @@ def combine_indices(new_question_set_indices, question_set_indices):
     for question_set_key in question_set_indices:
         question_set_indices[question_set_key].append(new_question_set_indices[question_set_key][0])
     return question_set_indices
+
 
 def load_and_store_tqa_articles(question_set_indices, es, bulk, config):
     """

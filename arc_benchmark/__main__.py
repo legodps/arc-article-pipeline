@@ -72,12 +72,14 @@ def run_arc_benchmark(config_file, article_directory, question_directory, arc_so
             or HTMLCOV_DIRECTORY in config[BENCHMARK_SET_DIRECTORY]:
         print(f'Do not set {BENCHMARK_SET_DIRECTORY} to any critical or already used directories.')
     else:
-        benchmark_results = load_json(ARC_RESULTS_FILE, config)
+        benchmark_results = load_json(config[ARC_RESULTS_FILE], config)
 
         es = Elasticsearch(hosts=[{HOST: config[HOST], PORT: config[PORT]}], retries=3, timeout=60)
         print('Connection to Elasticsearch cluster established')
+        print('Storing Articles In Elasticsearch...')
         question_set_indices, index_files = load_and_store_articles(article_filepath, es, bulk, config)
         question_set_indices, tqa_index = load_and_store_tqa_articles(question_set_indices, es, bulk, config)
+        print('Results Successfully stored')
 
         index_files = {
             **index_files,
@@ -89,6 +91,7 @@ def run_arc_benchmark(config_file, article_directory, question_directory, arc_so
             config
         )
         if not benchmark_results:
+            print('Evaluating Articles...')
             benchmark_results = evaluate_articles(
                 index_files,
                 question_set_indices,
@@ -103,7 +106,8 @@ def run_arc_benchmark(config_file, article_directory, question_directory, arc_so
                 arc_solver_filepath,
                 config
             )
-            store_json(benchmark_results, ARC_RESULTS_FILE, config)
+            print('Articles Evaluated')
+            store_json(benchmark_results, config[ARC_RESULTS_FILE], config)
 
         if not os.path.isfile(f'{config[CHECKPOINT_DIRECTORY]}/{config[FINAL_RESULTS_FILE]}'):
             analyze_results(benchmark_results, question_answer_counts, config)

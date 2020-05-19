@@ -10,6 +10,7 @@ conda_environment_name: 'allennlp'
 checkpoint_directory: 'checkpoints'
 arc_checkpoint_file: 'arc_runner_checkpoints.jsonl'
 arc_results_file: 'arc_results.json'
+individual_question_results_file: 'individual_question_results.json'
 arc_corpus_index: 'arc_corpus'
 final_results_file: 'final_results.json'
 mapping: |-

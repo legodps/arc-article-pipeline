@@ -1,9 +1,10 @@
 import json
 import os
-from arc_benchmark.constants import ANSWER_CHOICES, ANSWER_KEY, ARC_CHECKPOINT_FILE, ARC_RESULTS_FILE, BEING_ASKED, \
-    CHECKPOINT_DIRECTORY, CHOICES, CORRECT_ANSWER, FILE, GLOBAL_ID, ID, INDEX, JSONL_EXTENSION, JSON_EXTENSION, LABEL, \
-    NON_DIAGRAM_QUESTIONS, PARA_BODY, PARAGRAPHS, PROCESSED_TEXT, QUESTION, QUESTION_DIRECTORY, QUESTION_SET, \
-    QUESTIONS, SQUID, STEM, TEXT, TITLE, TQA
+from arc_benchmark.constants import ADJUNCT_TOPICS, ANSWER_CHOICES, ANSWER_KEY, ARC_CHECKPOINT_FILE, BEING_ASKED, \
+    CHECKPOINT_DIRECTORY, CHOICES, CONTENT, CORRECT_ANSWER, DIAGRAM_ANNOTATIONS, FILE, GLOBAL_ID, ID, INDEX, \
+    INSTRUCTIONAL_DIAGRAMS, JSONL_EXTENSION, JSON_EXTENSION, LABEL, LESSON_NAME, NON_DIAGRAM_QUESTIONS, PARA_BODY, \
+    PARAGRAPHS, PROCESSED_TEXT, QUESTION, QUESTION_DIRECTORY, QUESTION_SET, QUESTIONS, SQUID, STEM, TEXT, TITLE, \
+    TOPICS, TQA
 
 
 def process_article_line(article_line, filename):
@@ -258,27 +259,27 @@ def load_tqa_articles(question_set_indices, config):
     tqa_file.close()
 
     for question_set in tqa_dataset:
-        if question_set['globalID'] in question_set_indices:
+        if question_set[GLOBAL_ID] in question_set_indices:
             tqa_text = ''
 
-            for topic in question_set['topics'].keys():
-                tqa_text += question_set['topics'][topic]['content']['text']
-            for topic in question_set['adjunctTopics'].keys():
-                if 'content' in question_set['adjunctTopics'][topic] \
-                        and 'text' in question_set['adjunctTopics'][topic]['content']:
-                    tqa_text += question_set['adjunctTopics'][topic]['content']['text']
-            for diagram in question_set['diagramAnnotations'].keys():
-                for annotation in question_set['diagramAnnotations'][diagram]:
-                    if 'text' in annotation:
-                        tqa_text += f' {annotation["text"]}.'
-            for diagram in question_set['instructionalDiagrams'].keys():
-                if 'processedText' in question_set['instructionalDiagrams'][diagram]:
-                    tqa_text += question_set['instructionalDiagrams'][diagram]['processedText']
+            for topic in question_set[TOPICS].keys():
+                tqa_text += question_set[TOPICS][topic][CONTENT][TEXT]
+            for topic in question_set[ADJUNCT_TOPICS].keys():
+                if CONTENT in question_set[ADJUNCT_TOPICS][topic] \
+                        and TEXT in question_set[ADJUNCT_TOPICS][topic][CONTENT]:
+                    tqa_text += question_set[ADJUNCT_TOPICS][topic][CONTENT][TEXT]
+            for diagram in question_set[DIAGRAM_ANNOTATIONS].keys():
+                for annotation in question_set[DIAGRAM_ANNOTATIONS][diagram]:
+                    if TEXT in annotation:
+                        tqa_text += f' {annotation[TEXT]}.'
+            for diagram in question_set[INSTRUCTIONAL_DIAGRAMS].keys():
+                if PROCESSED_TEXT in question_set[INSTRUCTIONAL_DIAGRAMS][diagram]:
+                    tqa_text += question_set[INSTRUCTIONAL_DIAGRAMS][diagram][PROCESSED_TEXT]
 
             articles.append({
-                TITLE: f'{TQA}-{question_set["lessonName"].lower()}',
+                TITLE: f'{TQA}-{question_set[LESSON_NAME].lower()}',
                 TEXT: tqa_text,
-                ID: question_set['globalID'],
+                ID: question_set[GLOBAL_ID],
                 FILE: config[QUESTION_DIRECTORY].split('/')[-1]
             })
     return articles
