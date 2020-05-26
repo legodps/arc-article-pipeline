@@ -1,8 +1,9 @@
 from math import floor, ceil
-from arc_benchmark.constants import AVERAGE_CORRECT, AVERAGE_INCORRECT, AVERAGE_UNANSWERED, CHECKPOINT_DIRECTORY, \
-    CORRECT, CORRECT_STANDARD_DEVIATION, FINAL_RESULTS_FILE, INCORRECT, INCORRECT_STANDARD_DEVIATION, INDEX_COUNT, \
-    INDIVIDUAL_QUESTION_RESULTS_FILE, INDIVIDUAL_RESULTS, RANDOM_ANSWERING, RESULTS, QUESTION_COUNT, QUESTION_ID, \
-    QUESTION_SET, TOTAL, UNANSWERED, UNANSWERD_STANDARD_DEVIATION
+from arc_benchmark.constants import AVERAGE_CORRECT, AVERAGE_INCORRECT, AVERAGE_PERCENT_CORRECT, \
+    AVERAGE_PERCENT_INCORRECT, AVERAGE_PERCENT_UNANSWERED, AVERAGE_UNANSWERED, CHECKPOINT_DIRECTORY, CORRECT, \
+    CORRECT_STANDARD_DEVIATION, FINAL_RESULTS_FILE, INCORRECT, INCORRECT_STANDARD_DEVIATION, INDEX_COUNT, \
+    INDIVIDUAL_QUESTION_RESULTS_FILE, INDIVIDUAL_RESULTS, MAX_QUESTION_DISAGREEMENT, RANDOM_ANSWERING, RESULTS, \
+    QUESTION_COUNT, QUESTION_ID, QUESTION_SET, TOTAL, UNANSWERED, UNANSWERD_STANDARD_DEVIATION
 from arc_benchmark.file_utils import store_json
 
 
@@ -77,6 +78,31 @@ def calculate_results_standard_deviation(question_set_results, question_totals):
     }
 
 
+def split_questions_by_disagreement(individual_question_results, config):
+    """
+
+    """
+    questions_with_consensus = {}
+    questions_without_consensus = {}
+    for question_set_and_id in individual_question_results:
+        question_data = individual_question_results[question_set_and_id]
+        question_threshold = ceil(config[MAX_QUESTION_DISAGREEMENT] * question_data[TOTAL])
+        correct_incorrect = question_data[CORRECT] + question_data[INCORRECT]
+        correct_unanswered = question_data[CORRECT] + question_data[UNANSWERED]
+        incorrect_unanswered = question_data[INCORRECT] + question_data[UNANSWERED]
+
+        # this checks to make sure that there is at least a minimum disagreement between the articles for their
+        # results on this question. If there is high disagreement, results are spread out between correct, incorrect,
+        # and unanswered. If disagreement is low, most articles tended to answer the same way
+        if correct_incorrect > question_threshold and correct_unanswered > question_threshold \
+                and incorrect_unanswered > question_threshold:
+            questions_without_consensus[question_set_and_id] = question_data
+        else:
+            questions_with_consensus[question_set_and_id] = question_data
+
+    return questions_with_consensus, questions_without_consensus
+
+
 def analyze_questions(benchmark_results, config):
     """
 
@@ -128,11 +154,11 @@ def analyze_questions(benchmark_results, config):
 
         question_totals[question_set_id] = {
             **question_totals[question_set_id],
-            'average_percent_correct': question_totals[question_set_id][AVERAGE_CORRECT]
+            AVERAGE_PERCENT_CORRECT: question_totals[question_set_id][AVERAGE_CORRECT]
                                         / question_totals[question_set_id][QUESTION_COUNT],
-            'average_percent_incorrect': question_totals[question_set_id][AVERAGE_INCORRECT]
+            AVERAGE_PERCENT_INCORRECT: question_totals[question_set_id][AVERAGE_INCORRECT]
                                          / question_totals[question_set_id][QUESTION_COUNT],
-            'average_percent_unanswered': question_totals[question_set_id][AVERAGE_UNANSWERED]
+            AVERAGE_PERCENT_UNANSWERED: question_totals[question_set_id][AVERAGE_UNANSWERED]
                                           / question_totals[question_set_id][QUESTION_COUNT]
         }
 
@@ -144,5 +170,17 @@ def analyze_questions(benchmark_results, config):
             )
         }
 
+    questions_with_consensus, questions_without_consensus = split_questions_by_disagreement(
+        individual_question_results,
+        config
+    )
+    #print(questions_without_consensus)
+    print(len(individual_question_results))
+    print(len(questions_without_consensus))
+    correct_no_consensus_questions = {}
+    for question_set_and_id in questions_without_consensus:
+        if questions_without_consensus[question_set_and_id][CORRECT] > 0:
+            correct_no_consensus_questions[question_set_and_id] = questions_without_consensus[question_set_and_id]
+    #print(correct_no_consensus_questions)
+    print(len(correct_no_consensus_questions))
     store_json(individual_question_results, config[INDIVIDUAL_QUESTION_RESULTS_FILE], config)
-    print(individual_question_results)

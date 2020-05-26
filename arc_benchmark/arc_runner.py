@@ -51,6 +51,7 @@ def run_arc_on_index(index, config):
         Returns:
             dict: a python object containing the number of correct, incorrect, and unanswered questions the ARC-Solver
                 run produced for a given set of questions and article
+            dict: a python object containing the individual result by question id
     """
     run_results = subprocess.run(
         [
@@ -143,8 +144,18 @@ def evaluate_articles(index_files, question_set_indices, benchmark_set_filepaths
 
 
 def evaluate_arc_index(benchmark_results, question_set_indices, benchmark_set_filepaths, arc_solver_directory, config):
-    """
+    """ Runs much the same analysis on the ARC Corpus, this is a special case because the arc-corpus has one index
 
+        Args:
+            benchmark_results (dict): the results of the run on the previous set of benchmark results
+            question_set_indices (dict): a dictionary used to connect question sets to indices
+            benchmark_set_filepaths (dict): a dictionary used to connect question sets to particular files
+            arc_solver_directory (str): the directory of the ARC-Solver project
+            config (dict): config file specified properties to use in running the benchmark
+
+        Returns:
+            dict: a dictionary containing the results from the ARC index and all other indices and articles run
+                previously
     """
     checkpoint_file, completed_entries = create_or_load_arc_checkpoint(config)
     benchmark_dir = os.getcwd()

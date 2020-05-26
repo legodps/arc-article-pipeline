@@ -1,18 +1,22 @@
+# Properties you might need/want to change
 host: 'localhost'
 port: 9200
 article_directory: '../generated_articles'
 question_directory: 'question-for-extraction/tqa_v1_train.json'
-benchmark_set_directory: '/question-sets'
 arc_solver_directory: '../ARC-Solvers'
+conda_environment_name: 'allennlp'
+
+# Properties you probably shouldn't change
+benchmark_set_directory: '/question-sets'
 arc_data_subdirectory: 'data/ARC-V1-Feb2018/ARC-Challenge'
 arc_model_subdirectory: 'data/ARC-V1-Models-Aug2018/decompatt/'
-conda_environment_name: 'allennlp'
 checkpoint_directory: 'checkpoints'
 arc_checkpoint_file: 'arc_runner_checkpoints.jsonl'
 arc_results_file: 'arc_results.json'
+final_results_file: 'final_results.json'
 individual_question_results_file: 'individual_question_results.json'
 arc_corpus_index: 'arc_corpus'
-final_results_file: 'final_results.json'
+max_question_disagreement: .2
 mapping: |-
   {
     "mappings": {

@@ -22,7 +22,7 @@ def create_elasticsearch_index(index_name,  es, config):
         Args:
             index_name (str): the name of the index to be created
             es (object): an Elasticsearch instance to use for creating indices
-            config (dict): an object containing configurations
+            config (dict): config file specified properties to use in running the benchmark
     """
     es.indices.create(index=index_name, ignore=400, body=config[MAPPING])
 
@@ -33,7 +33,7 @@ def make_documents(index_name, article, config):
         Args:
             index_name (str): the name of the index to insert into the instance of Elasticsearch
             article (list): a list of sentences from an article
-            config (dict): an object containing configurations
+            config (dict): config file specified properties to use in running the benchmark
         
         Returns:
             generator: a iterable group of Elasticsearch compatible documents
@@ -98,8 +98,14 @@ def load_and_store_articles(article_directory, es, bulk, config):
 
 
 def combine_indices(new_question_set_indices, question_set_indices):
-    """
+    """ Combines the two sets of question set indices to get a master list
 
+        Args:
+            new_question_set_indices (dict): a set of indices and questions to be combined with the existing master list
+            question_set_indices (dict): a set of existing indices and questions to be added to
+
+        Returns:
+            dict: the combined list of questions and indices
     """
     for question_set_key in question_set_indices:
         question_set_indices[question_set_key].append(new_question_set_indices[question_set_key][0])
@@ -107,8 +113,17 @@ def combine_indices(new_question_set_indices, question_set_indices):
 
 
 def load_and_store_tqa_articles(question_set_indices, es, bulk, config):
-    """
+    """ Loads articles from the TQA dataset and stores them in the Elasticsearch Database
 
+        Args:
+            question_set_indices (dict): a list of indices by the questions set they are slated to answer
+            es (object): the Elasticsearch Object used to insert into the database
+            bulk (function): the Elasticsearch function to rapidly insert a large chunk of indices
+            config (dict): config file specified properties to use in running the benchmark
+
+        Returns:
+            dict: the master list of normal article indices and tqa article indices by the question set they will
+                answer
     """
     articles = load_tqa_articles(question_set_indices, config)
     tqa_question_set_indices, index_files = store_articles(articles, es, bulk, config)

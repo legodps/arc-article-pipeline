@@ -250,8 +250,15 @@ def store_json(results, filename, config):
 
 
 def load_tqa_articles(question_set_indices, config):
-    """
+    """ Loads the corpus from the TQA articles for each set of questions
 
+        Args:
+            question_set_indices (dict): the existing list of question sets that will be used to narrow down which
+                TQA articles will be loaded
+            config (dict): config file specified properties to use in running the benchmark
+
+        Returns:
+            list: the loaded TQA articles to be later stored into Elasticsearch
     """
     articles = []
     tqa_file = open(config[QUESTION_DIRECTORY], 'r')
