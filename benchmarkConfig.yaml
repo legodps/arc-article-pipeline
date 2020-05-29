@@ -13,8 +13,9 @@ arc_model_subdirectory: 'data/ARC-V1-Models-Aug2018/decompatt/'
 checkpoint_directory: 'checkpoints'
 arc_checkpoint_file: 'arc_runner_checkpoints.jsonl'
 arc_results_file: 'arc_results.json'
-final_results_file: 'final_results.json'
-individual_question_results_file: 'individual_question_results.json'
+final_results_file: 'article_results.json'
+question_set_metrics_file: 'question_set_metrics.json'
+individual_question_metrics_file: 'individual_question_results.json'
 arc_corpus_index: 'arc_corpus'
 max_question_disagreement: .2
 mapping: |-

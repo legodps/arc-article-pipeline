@@ -1,9 +1,11 @@
 from math import floor, ceil
-from arc_benchmark.constants import AVERAGE_CORRECT, AVERAGE_INCORRECT, AVERAGE_PERCENT_CORRECT, \
+from arc_benchmark.constants import ARTICLE_COUNT, AVERAGE_CORRECT, AVERAGE_INCORRECT, AVERAGE_PERCENT_CORRECT, \
     AVERAGE_PERCENT_INCORRECT, AVERAGE_PERCENT_UNANSWERED, AVERAGE_UNANSWERED, CHECKPOINT_DIRECTORY, CORRECT, \
-    CORRECT_STANDARD_DEVIATION, FINAL_RESULTS_FILE, INCORRECT, INCORRECT_STANDARD_DEVIATION, INDEX_COUNT, \
-    INDIVIDUAL_QUESTION_RESULTS_FILE, INDIVIDUAL_RESULTS, MAX_QUESTION_DISAGREEMENT, RANDOM_ANSWERING, RESULTS, \
-    QUESTION_COUNT, QUESTION_ID, QUESTION_SET, TOTAL, UNANSWERED, UNANSWERD_STANDARD_DEVIATION
+    CORRECT_STANDARD_DEVIATION, DECIMAL_DIGITS, DISAGREEMENT, FINAL_RESULTS_FILE, INCORRECT, \
+    INCORRECT_STANDARD_DEVIATION, INDIVIDUAL_QUESTION_METRICS_FILE, INDIVIDUAL_RESULTS, PERCENT_CORRECT, \
+    PERCENT_INCORRECT, PERCENT_UNANSWERED, RANDOM_ANSWERING, RESULTS, QUESTION_COUNT, QUESTION_ID, QUESTION_SET, \
+    QUESTION_SET_METRICS_FILE, TOTAL_CORRECT, TOTAL_INCORRECT, TOTAL_UNANSWERED, UNANSWERED, \
+    UNANSWERD_STANDARD_DEVIATION
 from arc_benchmark.file_utils import store_json
 
 
@@ -36,7 +38,7 @@ def analyze_results(benchmark_results, question_answer_counts, config):
     """ Tallies the count of correct, incorrect, and unanswered questions by article file
 
         Args:
-            benchmark_results (dict): the results obtained from running the ARC Solver repeatedly,
+            benchmark_results (dict): the results obtained from running the ARC Solver repeatedly
             question_answer_counts (dict): the count of questions by the number of possible answers
             config (dict): config file specified properties to use in running the benchmark
     """
@@ -62,50 +64,158 @@ def analyze_results(benchmark_results, question_answer_counts, config):
     print('##############')
 
 
-def calculate_results_standard_deviation(question_set_results, question_totals):
+def calculate_results_standard_deviation(question_set_results, question_set_metrics):
+    """ Calculates the standard deviation of the number of correct, incorrect, and unanswered questions by articles
+        across a question set
+
+        Args:
+            question_set_results (dict): the raw performance of articles across question sets
+            question_set_metrics (dict): the partially analyzed results from the article performance on a question set
+
+        Returns:
+            dict: the partially analyzed results with the additional standard deviation metrics
+    """
     correct_mean_diff_total = 0
     incorrect_mean_diff_total = 0
     unanswered_mean_diff_total = 0
     for results in question_set_results:
-        correct_mean_diff_total = (results[RESULTS][CORRECT] - question_totals[AVERAGE_CORRECT]) ** 2
-        incorrect_mean_diff_total = (results[RESULTS][INCORRECT] - question_totals[AVERAGE_INCORRECT]) ** 2
-        unanswered_mean_diff_total = (results[RESULTS][UNANSWERED] - question_totals[AVERAGE_UNANSWERED]) ** 2
+        correct_mean_diff_total = (results[RESULTS][CORRECT] - question_set_metrics[AVERAGE_CORRECT]) ** 2
+        incorrect_mean_diff_total = (results[RESULTS][INCORRECT] - question_set_metrics[AVERAGE_INCORRECT]) ** 2
+        unanswered_mean_diff_total = (results[RESULTS][UNANSWERED] - question_set_metrics[AVERAGE_UNANSWERED]) ** 2
 
     return {
-        CORRECT_STANDARD_DEVIATION: (correct_mean_diff_total / question_totals[INDEX_COUNT]) ** 0.5,
-        INCORRECT_STANDARD_DEVIATION: (incorrect_mean_diff_total / question_totals[INDEX_COUNT]) ** 0.5,
-        UNANSWERD_STANDARD_DEVIATION: (unanswered_mean_diff_total / question_totals[INDEX_COUNT]) ** 0.5
+        CORRECT_STANDARD_DEVIATION: round(
+            (correct_mean_diff_total / question_set_metrics[ARTICLE_COUNT]) ** 0.5,
+            DECIMAL_DIGITS
+        ),
+        INCORRECT_STANDARD_DEVIATION: round(
+            (incorrect_mean_diff_total / question_set_metrics[ARTICLE_COUNT]) ** 0.5,
+            DECIMAL_DIGITS
+        ),
+        UNANSWERD_STANDARD_DEVIATION: round(
+            (unanswered_mean_diff_total / question_set_metrics[ARTICLE_COUNT]) ** 0.5,
+            DECIMAL_DIGITS
+        )
     }
 
 
-def split_questions_by_disagreement(individual_question_results, config):
+def calculate_question_set_metrics(question_set_results):
+    """ Calculates the metrics across sets of questions
+
+        Args:
+            question_set_results (dict): the raw performance of articles by each question set
+
+        Returns:
+            dict: the fully analyzed results of article performance on a question set
     """
+    question_set_metrics = {}
+    for question_set_id in question_set_results.keys():
+        count = 0
+        correct = 0
+        incorrect = 0
+        unanswered = 0
+        for results in question_set_results[question_set_id]:
+            count += 1
+            correct += results[RESULTS][CORRECT]
+            incorrect += results[RESULTS][INCORRECT]
+            unanswered += results[RESULTS][UNANSWERED]
 
+        question_set_metrics[question_set_id] = {
+            ARTICLE_COUNT: count,
+            QUESTION_COUNT: int((correct + incorrect + unanswered) / count),
+            TOTAL_CORRECT: correct,
+            AVERAGE_CORRECT: round(correct / count, DECIMAL_DIGITS),
+            TOTAL_INCORRECT: incorrect,
+            AVERAGE_INCORRECT: round(incorrect / count, DECIMAL_DIGITS),
+            TOTAL_UNANSWERED: unanswered,
+            AVERAGE_UNANSWERED: round(unanswered / count, DECIMAL_DIGITS)
+        }
+
+        question_set_metrics[question_set_id] = {
+            **question_set_metrics[question_set_id],
+            AVERAGE_PERCENT_CORRECT: round(
+                question_set_metrics[question_set_id][AVERAGE_CORRECT]
+                    / question_set_metrics[question_set_id][QUESTION_COUNT],
+                DECIMAL_DIGITS
+            ),
+            AVERAGE_PERCENT_INCORRECT: round(
+                question_set_metrics[question_set_id][AVERAGE_INCORRECT]
+                    / question_set_metrics[question_set_id][QUESTION_COUNT],
+                DECIMAL_DIGITS
+            ),
+            AVERAGE_PERCENT_UNANSWERED: round(
+                question_set_metrics[question_set_id][AVERAGE_UNANSWERED]
+                    / question_set_metrics[question_set_id][QUESTION_COUNT],
+                DECIMAL_DIGITS
+            )
+        }
+
+        question_set_metrics[question_set_id] = {
+            **question_set_metrics[question_set_id],
+            **calculate_results_standard_deviation(
+                question_set_results[question_set_id],
+                question_set_metrics[question_set_id]
+            )
+        }
+    return question_set_metrics
+
+
+def calculate_disagreement(individual_question_result):
+    """ Calculates how many articles disagreed from the majority/plurality opinion on an individual question
+
+        Args:
+            individual_question_result (dict): the raw performance of the articles on an individual question
+
+        Returns:
+            float: the percent of answers that differed from the majority/plurality
     """
-    questions_with_consensus = {}
-    questions_without_consensus = {}
-    for question_set_and_id in individual_question_results:
-        question_data = individual_question_results[question_set_and_id]
-        question_threshold = ceil(config[MAX_QUESTION_DISAGREEMENT] * question_data[TOTAL])
-        correct_incorrect = question_data[CORRECT] + question_data[INCORRECT]
-        correct_unanswered = question_data[CORRECT] + question_data[UNANSWERED]
-        incorrect_unanswered = question_data[INCORRECT] + question_data[UNANSWERED]
+    answer_percents = [
+        individual_question_result[CORRECT] / individual_question_result[ARTICLE_COUNT],
+        individual_question_result[INCORRECT] / individual_question_result[ARTICLE_COUNT],
+        individual_question_result[UNANSWERED] / individual_question_result[ARTICLE_COUNT]
+    ]
+    answer_percents.sort()
+    return round(answer_percents[0] + answer_percents[1], DECIMAL_DIGITS)
 
-        # this checks to make sure that there is at least a minimum disagreement between the articles for their
-        # results on this question. If there is high disagreement, results are spread out between correct, incorrect,
-        # and unanswered. If disagreement is low, most articles tended to answer the same way
-        if correct_incorrect > question_threshold and correct_unanswered > question_threshold \
-                and incorrect_unanswered > question_threshold:
-            questions_without_consensus[question_set_and_id] = question_data
-        else:
-            questions_with_consensus[question_set_and_id] = question_data
 
-    return questions_with_consensus, questions_without_consensus
+def calculate_individual_question_metrics(individual_question_results):
+    """ Calculates metrics specific to individual questions
+
+        Args:
+            individual_question_results (dict): the raw performance of articles on an individual question
+
+        Returns:
+            dict: the fully analyzed results of each individual question
+    """
+    individual_question_metrics = {}
+    for question_set_and_id in individual_question_results.keys():
+        article_count = individual_question_results[question_set_and_id][ARTICLE_COUNT]
+        individual_question_metrics[question_set_and_id] = {
+            **individual_question_results[question_set_and_id],
+            PERCENT_CORRECT: round(
+                individual_question_results[question_set_and_id][CORRECT] / article_count,
+                DECIMAL_DIGITS
+            ),
+            PERCENT_INCORRECT: round(
+                individual_question_results[question_set_and_id][INCORRECT] / article_count,
+                DECIMAL_DIGITS
+            ),
+            PERCENT_UNANSWERED: round(
+                individual_question_results[question_set_and_id][UNANSWERED] / article_count,
+                DECIMAL_DIGITS
+            ),
+            DISAGREEMENT: calculate_disagreement(individual_question_results[question_set_and_id])
+        }
+
+    return individual_question_metrics
 
 
 def analyze_questions(benchmark_results, config):
-    """
+    """ Orchestrates the calculation of the metrics about question sets and individual questions
 
+        Args:
+            benchmark_results (dict): the results obtained from running the ARC Solver repeatedly
+            config (dict): config file specified properties to use in running the benchmark
     """
     question_set_results = {}
     individual_question_results = {}
@@ -123,64 +233,13 @@ def analyze_questions(benchmark_results, config):
                         CORRECT: 0,
                         INCORRECT: 0,
                         UNANSWERED: 0,
-                        TOTAL: 0
+                        ARTICLE_COUNT: 0
                     }
                 individual_question_results[f'{index_results[QUESTION_SET]}:{question_id}'] \
                     [index_results[INDIVIDUAL_RESULTS][question_id]] += 1
-                individual_question_results[f'{index_results[QUESTION_SET]}:{question_id}'][TOTAL] += 1
+                individual_question_results[f'{index_results[QUESTION_SET]}:{question_id}'][ARTICLE_COUNT] += 1
 
-    question_totals = {}
-    for question_set_id in question_set_results.keys():
-        count = 0
-        correct = 0
-        incorrect = 0
-        unanswered = 0
-        for results in question_set_results[question_set_id]:
-            count += 1
-            correct += results[RESULTS][CORRECT]
-            incorrect += results[RESULTS][INCORRECT]
-            unanswered += results[RESULTS][UNANSWERED]
-
-        question_totals[question_set_id] = {
-            INDEX_COUNT: count,
-            QUESTION_COUNT: (correct + incorrect + unanswered) / count,
-            CORRECT: correct,
-            AVERAGE_CORRECT: correct/count,
-            INCORRECT: incorrect,
-            AVERAGE_INCORRECT: incorrect/count,
-            UNANSWERED: unanswered,
-            AVERAGE_UNANSWERED: unanswered/count
-        }
-
-        question_totals[question_set_id] = {
-            **question_totals[question_set_id],
-            AVERAGE_PERCENT_CORRECT: question_totals[question_set_id][AVERAGE_CORRECT]
-                                        / question_totals[question_set_id][QUESTION_COUNT],
-            AVERAGE_PERCENT_INCORRECT: question_totals[question_set_id][AVERAGE_INCORRECT]
-                                         / question_totals[question_set_id][QUESTION_COUNT],
-            AVERAGE_PERCENT_UNANSWERED: question_totals[question_set_id][AVERAGE_UNANSWERED]
-                                          / question_totals[question_set_id][QUESTION_COUNT]
-        }
-
-        question_totals[question_set_id] = {
-            **question_totals[question_set_id],
-            **calculate_results_standard_deviation(
-                question_set_results[question_set_id],
-                question_totals[question_set_id]
-            )
-        }
-
-    questions_with_consensus, questions_without_consensus = split_questions_by_disagreement(
-        individual_question_results,
-        config
-    )
-    #print(questions_without_consensus)
-    print(len(individual_question_results))
-    print(len(questions_without_consensus))
-    correct_no_consensus_questions = {}
-    for question_set_and_id in questions_without_consensus:
-        if questions_without_consensus[question_set_and_id][CORRECT] > 0:
-            correct_no_consensus_questions[question_set_and_id] = questions_without_consensus[question_set_and_id]
-    #print(correct_no_consensus_questions)
-    print(len(correct_no_consensus_questions))
-    store_json(individual_question_results, config[INDIVIDUAL_QUESTION_RESULTS_FILE], config)
+    question_set_metrics = calculate_question_set_metrics(question_set_results)
+    individual_question_metrics = calculate_individual_question_metrics(individual_question_results)
+    store_json(question_set_metrics, config[QUESTION_SET_METRICS_FILE], config)
+    store_json(individual_question_metrics, config[INDIVIDUAL_QUESTION_METRICS_FILE], config)
