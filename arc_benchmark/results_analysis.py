@@ -69,7 +69,7 @@ def calculate_results_standard_deviation(question_set_results, question_set_metr
         across a question set
 
         Args:
-            question_set_results (dict): the raw performance of articles across question sets
+            question_set_results (list): the raw performance of articles across question sets
             question_set_metrics (dict): the partially analyzed results from the article performance on a question set
 
         Returns:
@@ -79,9 +79,9 @@ def calculate_results_standard_deviation(question_set_results, question_set_metr
     incorrect_mean_diff_total = 0
     unanswered_mean_diff_total = 0
     for results in question_set_results:
-        correct_mean_diff_total = (results[RESULTS][CORRECT] - question_set_metrics[AVERAGE_CORRECT]) ** 2
-        incorrect_mean_diff_total = (results[RESULTS][INCORRECT] - question_set_metrics[AVERAGE_INCORRECT]) ** 2
-        unanswered_mean_diff_total = (results[RESULTS][UNANSWERED] - question_set_metrics[AVERAGE_UNANSWERED]) ** 2
+        correct_mean_diff_total += (results[RESULTS][CORRECT] - question_set_metrics[AVERAGE_CORRECT]) ** 2
+        incorrect_mean_diff_total += (results[RESULTS][INCORRECT] - question_set_metrics[AVERAGE_INCORRECT]) ** 2
+        unanswered_mean_diff_total += (results[RESULTS][UNANSWERED] - question_set_metrics[AVERAGE_UNANSWERED]) ** 2
 
     return {
         CORRECT_STANDARD_DEVIATION: round(
@@ -114,6 +114,7 @@ def calculate_question_set_metrics(question_set_results):
         correct = 0
         incorrect = 0
         unanswered = 0
+        print(question_set_results[question_set_id])
         for results in question_set_results[question_set_id]:
             count += 1
             correct += results[RESULTS][CORRECT]

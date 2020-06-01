@@ -2,12 +2,25 @@ import json
 import os
 import shutil
 from unittest import TestCase
+from math import sqrt
 from arc_benchmark.constants import DECIMAL_DIGITS
-from arc_benchmark.results_analysis import analyze_results, calculate_results_standard_deviation, \
+from arc_benchmark.results_analysis import analyze_results, calculate_baselines, calculate_results_standard_deviation, \
     calculate_disagreement, calculate_individual_question_metrics
 
 
 class TestResultsAnalysis(TestCase):
+    def test_calculate_baselines(self):
+        test_input = {
+            '2': 5,
+            '4': 5
+        }
+        self.assertEqual(
+            {'correct': 4, 'incorrect': 6, 'unanswered': 0},
+            calculate_baselines(test_input),
+            'it should provide a statistically random distribution of correct answers based on the number of possible'
+            'answers, rounding up on 50/50 splits'
+        )
+
     def test_analyze_results(self):
         fake_directory = '/fake_directory_dont_use'
         if os.path.isdir(f'{os.getcwd()}{fake_directory}'):
@@ -42,6 +55,43 @@ class TestResultsAnalysis(TestCase):
                 'it should sum the correct, incorrect, and unanswered from each index and save it to a file'
             )
             shutil.rmtree(f'{os.getcwd()}{fake_directory}')
+
+    def test_calculate_results_standard_deviation(self):
+        test_question_set_results = [
+            {
+                'results': {
+                    'correct': 1,
+                    'incorrect': 2,
+                    'unanswered': 3
+                }
+            },
+            {
+                'results': {
+                    'correct': 2,
+                    'incorrect': 3,
+                    'unanswered': 1
+                }
+            }
+        ]
+        test_question_metrics = {
+            'average_correct': 2,
+            'average_incorrect': 2,
+            'average_unanswered': 2,
+            'article_count': 2
+        }
+        expected_output = {
+            'correct_std_dev': round(sqrt(.5), DECIMAL_DIGITS),
+            'incorrect_std_dev': round(sqrt(.5), DECIMAL_DIGITS),
+            'unanswered_std_dev': 1.0
+        }
+        self.assertEqual(
+            expected_output,
+            calculate_results_standard_deviation(
+                test_question_set_results,
+                test_question_metrics
+            ),
+            'it should calculate the standard deviation of the results from different articles'
+        )
 
     def test_calculate_disagreement(self):
         test_input = {
