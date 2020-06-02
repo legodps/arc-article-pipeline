@@ -114,7 +114,6 @@ def calculate_question_set_metrics(question_set_results):
         correct = 0
         incorrect = 0
         unanswered = 0
-        print(question_set_results[question_set_id])
         for results in question_set_results[question_set_id]:
             count += 1
             correct += results[RESULTS][CORRECT]
