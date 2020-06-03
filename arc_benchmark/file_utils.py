@@ -82,6 +82,8 @@ def retrieve_questions(filepath, question_set_ids):
 
         Args:
             filepath (str): the path to the question file
+            question_set_ids (keysview): a list of ids that correspond to sets of questions that should be saved,
+                all other sets of questions should be ignored as they won't be used in the benchmark
 
         Returns:
             dict: groups of questions to be stored for later benchmarking
@@ -159,7 +161,8 @@ def read_json_questions(filepath, question_set_ids):
 
         Args:
             filepath (str): a path to a singular, or directory of, JSON question files
-            question_set_ids (list): a list of all the questions that should be loaded in
+            question_set_ids (keysview): a list of ids that correspond to sets of questions that should be saved,
+                all other sets of questions should be ignored as they won't be used in the benchmark
 
         Returns:
             dict: all sets of grouped questions

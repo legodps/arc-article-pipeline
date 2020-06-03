@@ -107,7 +107,8 @@ def combine_indices(new_question_set_indices, question_set_indices):
         Returns:
             dict: the combined list of questions and indices
     """
-    for question_set_key in question_set_indices:
+    print(question_set_indices)
+    for question_set_key in new_question_set_indices:
         question_set_indices[question_set_key].append(new_question_set_indices[question_set_key][0])
     return question_set_indices
 
@@ -124,6 +125,7 @@ def load_and_store_tqa_articles(question_set_indices, es, bulk, config):
         Returns:
             dict: the master list of normal article indices and tqa article indices by the question set they will
                 answer
+            dict: a dict of files associated with their indices, used later in calculating results
     """
     articles = load_tqa_articles(question_set_indices, config)
     tqa_question_set_indices, index_files = store_articles(articles, es, bulk, config)

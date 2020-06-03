@@ -42,8 +42,13 @@ class TestResultsAnalysis(TestCase):
                     {'results': {'correct': 3, 'incorrect': 4, 'unanswered': 5}}
                 ]
             }
-            analyze_results(benchmark_results, config)
+            test_question_counts = {
+                '2': 5,
+                '4': 5
+            }
+            analyze_results(benchmark_results, test_question_counts, config)
             expected_results = {
+                'random_answering': {'correct': 4, 'incorrect': 6, 'unanswered': 0},
                 'file1': {'correct': 3, 'incorrect': 5, 'unanswered': 7},
                 'file2': {'correct': 3, 'incorrect': 4, 'unanswered': 5}
             }

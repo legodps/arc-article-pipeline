@@ -166,16 +166,21 @@ class TestLoadFiles(TestCase):
             }]
         }
         filename = 'tests/data-files/questions/test_questions_1'
+        questions_1, question_counts_1 = retrieve_questions(filename, ['abcd', 'efgh'])
         self.assertEqual(
             expected_questions,
-            retrieve_questions(filename),
+            questions_1,
             'it should load in the question file without a specified file extension'
         )
+        self.assertEqual({'2': 1, '3': 1, '4': 1}, question_counts_1)
+
+        questions_2, question_counts_2 = retrieve_questions(f'{filename}.json', ['abcd', 'efgh'])
         self.assertEqual(
             expected_questions,
-            retrieve_questions(f'{filename}.json'),
+            questions_2,
             'it should load in the question file with a specified file extension'
         )
+        self.assertEqual({'2': 1, '3': 1, '4': 1}, question_counts_2)
 
     def test_read_json_questions_single_file(self):
         expected_single_file = {
@@ -242,11 +247,17 @@ class TestLoadFiles(TestCase):
             ]
         }
 
+        questions, question_counts = read_json_questions(
+            'tests/data-files/questions/test_questions_2.json',
+            ['ijkl', 'mnop']
+        )
+
         self.assertEqual(
             expected_single_file,
-            read_json_questions('tests/data-files/questions/test_questions_2.json'),
+            questions,
             'it should load in a single specified and all questions within it'
         )
+        self.assertEqual({'1': 1, '2': 1, '5': 1}, question_counts)
 
     def test_read_json_questions_multiple_files(self):
         expected_single_file = {
@@ -378,11 +389,14 @@ class TestLoadFiles(TestCase):
             ]
         }
 
+        questions, question_counts = read_json_questions('tests/data-files/questions', ['abcd', 'efgh', 'ijkl', 'mnop'])
+
         self.assertEqual(
             expected_single_file,
-            read_json_questions('tests/data-files/questions'),
+            questions,
             'it should load in all questions from a directory of question files'
         )
+        self.assertEqual({'1': 1, '2': 2, '3': 1, '4': 1, '5': 1}, question_counts)
 
     def test_create_or_load_arc_checkpoint_no_checkpoint(self):
         if os.path.isdir(f'{os.getcwd()}/{fake_directory}'):
@@ -410,7 +424,7 @@ class TestLoadFiles(TestCase):
             checkpoint_filename = 'fake_checkpoint.jsonl'
             os.mkdir(f'{os.getcwd()}{fake_directory}')
             file = open(f'{os.getcwd()}/{fake_directory}/{checkpoint_filename}', 'w')
-            file.write(json.dumps({'index': 'fake_index', 'one': 'two'}))
+            file.write(json.dumps({'index': 'fake_index', 'one': 'two', 'question_set': '1'}))
             file.close()
 
             checkpoint_file, completed_entries = create_or_load_arc_checkpoint({
@@ -421,7 +435,10 @@ class TestLoadFiles(TestCase):
                 os.path.isdir(f'{os.getcwd()}{fake_directory}'),
                 'It should load an existing checkpoint file'
             )
-            self.assertEqual({'fake_index': {'index': 'fake_index', 'one': 'two'}}, completed_entries)
+            self.assertEqual(
+                {('fake_index', '1'): {'index': 'fake_index', 'one': 'two', 'question_set': '1'}},
+                completed_entries
+            )
             self.assertTrue(isinstance(checkpoint_file, object))
             checkpoint_file.close()
 

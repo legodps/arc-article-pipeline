@@ -69,5 +69,34 @@
         }
       }
     }
+  },
+  {
+    "globalID": "qrst",
+    "questions": {
+      "nonDiagramQuestions": {
+        "number_1": {
+          "beingAsked": {
+            "processedText": "this is the fourth question but it won't be included"
+          },
+          "correctAnswer": {
+            "processedText": "c"
+          },
+          "answerChoices": {
+            "a": {
+              "processedText": "The first answer is correct"
+            },
+            "b": {
+              "processedText": "The second answer is correct"
+            },
+            "c": {
+              "processedText": "The third answer is correct"
+            },
+            "d": {
+              "processedText": "The fourth answer is correct"
+            }
+          }
+        }
+      }
+    }
   }
 ]

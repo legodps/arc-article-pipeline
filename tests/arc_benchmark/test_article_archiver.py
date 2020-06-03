@@ -1,6 +1,6 @@
+import os
 from unittest import TestCase
 from unittest.mock import Mock, call
-from elasticsearch import ElasticsearchException
 from arc_benchmark import article_archiver
 
 
@@ -168,3 +168,48 @@ class TestArticleArchiver(TestCase):
             call(index='test-articles-1-full-metal-coding', ignore=400, body={})
         ])
         mock_bulk.assert_called()
+
+    def test_combined_indices(self):
+        input_question_set_indices = {
+            '1': ['asdf'],
+            '2': ['efgh']
+        }
+        input_new_question_set_indices = {
+            '1': ['ijkl'],
+            '2': ['mnop']
+        }
+        expected_output = {
+            '1': ['asdf', 'ijkl'],
+            '2': ['efgh', 'mnop']
+        }
+        self.assertEqual(
+            expected_output,
+            article_archiver.combine_indices(input_new_question_set_indices, input_question_set_indices),
+            'it should merge two sets of question set indices together'
+        )
+
+    def test_load_and_store_tqa_articles(self):
+        exists_mock = Mock(return_value=True)
+        create_mock = Mock(return_value=True)
+        es_mock = Mock(indices=Mock(exists=exists_mock, create=create_mock))
+        mock_bulk = Mock(return_value=True)
+        fake_config = {'mapping': {}, 'question_directory': f'{os.getcwd()}/tests/data-files/articles/test_tqa.json'}
+        question_set_indices, index_files = article_archiver.load_and_store_tqa_articles(
+            {'manta': ['fake-article-0'], 'ray': ['fake-article-2']},
+            es_mock,
+            mock_bulk,
+            fake_config
+        )
+        expected_combined_indices = {
+            'manta': ['fake-article-0', 'tqa-tqa-article'],
+            'ray': ['fake-article-2']
+        }
+        expected_index_files = {
+            'tqa-tqa-article': 'test_tqa.json'
+        }
+        self.assertEqual(
+            expected_combined_indices,
+            question_set_indices,
+            'it should load and store text information from the tqa dataset'
+        )
+        self.assertEqual(expected_index_files, index_files)

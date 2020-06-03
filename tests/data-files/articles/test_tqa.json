@@ -1,0 +1,37 @@
+[
+  {
+    "globalID": "manta",
+    "lessonName": "tqa-article",
+    "topics": {
+      "1": {
+        "content": {
+          "text": "this is the topic text"
+        }
+      }
+    },
+    "adjunctTopics": {
+      "1": {
+        "notContent": {}
+      },
+      "2": {
+        "content": {
+          "text": "this is the adjuncttopic text"
+        }
+      }
+    },
+    "diagramAnnotations": {
+      "1": [
+        {"text":  "this is diagramannotation text"},
+        {}
+      ]
+    },
+    "instructionalDiagrams": {
+      "2": {
+        "processedText": "this is instructionaldiagram processedtext"
+      }
+    }
+  },
+  {
+    "globalID": "sting"
+  }
+]

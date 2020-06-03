@@ -8,7 +8,9 @@ from arc_benchmark.constants import ARC_DATA_SMALL_WIPE_KEEP_FILES, ARC_DATA_FUL
 from arc_benchmark.arc_runner import clean_checkpoints, copy_test_set, run_arc_on_index, evaluate_articles
 
 fake_directory = 'fake_directory_dont_use'
-fake_response = 'unused text\n more unused text\n Metrics\n\n\n\nCorrect:1\nIncorrect:2\nUnanswered:3'
+fake_response = 'unused text\n more unused text\n Metrics\n\n\n\nCorrect:1\nIncorrect:2\nUnanswered:3\n' \
+                'Addendum Results:\n{"0": "correct", "1": "incorrect", "2": "incorrect", "3": "unanswered", ' \
+                '"4": "unanswered", "5": "unanswered"}'
 test_set_filename = 'fake-test-set.jsonl'
 
 
@@ -73,12 +75,21 @@ class TestArcRunner(TestCase):
             'arc_data_subdirectory': 'fake_subdirectory',
             'arc_model_subdirectory': 'fake_directory'
         }
-        results = run_arc_on_index('fake_index', config)
+        expected_individual_results = {
+            '0': 'correct',
+            '1': 'incorrect',
+            '2': 'incorrect',
+            '3': 'unanswered',
+            '4': 'unanswered',
+            '5': 'unanswered'
+        }
+        results, individual_results = run_arc_on_index('fake_index', config)
         self.assertEqual(
             {'correct': 1, 'incorrect': 2, 'unanswered': 3},
             results,
             'it should run the ARC solver program, get the results, and parse them'
         )
+        self.assertEqual(expected_individual_results, individual_results)
         mock_run.assert_called_once_with(
             [
                 'conda',
@@ -92,7 +103,7 @@ class TestArcRunner(TestCase):
                 'fake_index'
             ],
             stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
             universal_newlines=True
         )
 
@@ -114,6 +125,17 @@ class TestArcRunner(TestCase):
             checkpoint_json = {
                 'index': 'index1',
                 'question_set': '1',
+                'individual_results': {
+                    '0': 'correct',
+                    '1': 'correct',
+                    '2': 'incorrect',
+                    '3': 'incorrect',
+                    '4': 'incorrect',
+                    '5': 'unanswered',
+                    '6': 'unanswered',
+                    '7': 'unanswered',
+                    '8': 'unanswered'
+                },
                 'results': {
                     'correct': 2,
                     'incorrect': 3,
@@ -145,6 +167,17 @@ class TestArcRunner(TestCase):
                     {
                         'index': 'index1',
                         'question_set': '1',
+                        'individual_results': {
+                            '0': 'correct',
+                            '1': 'correct',
+                            '2': 'incorrect',
+                            '3': 'incorrect',
+                            '4': 'incorrect',
+                            '5': 'unanswered',
+                            '6': 'unanswered',
+                            '7': 'unanswered',
+                            '8': 'unanswered'
+                        },
                         'results': {
                             'correct': 2,
                             'incorrect': 3,
@@ -153,6 +186,14 @@ class TestArcRunner(TestCase):
                     },
                     {
                         'question_set': '1',
+                        'individual_results': {
+                            '0': 'correct',
+                            '1': 'incorrect',
+                            '2': 'incorrect',
+                            '3': 'unanswered',
+                            '4': 'unanswered',
+                            '5': 'unanswered'
+                        },
                         'results': {
                             'correct': 1,
                             'incorrect': 2,
