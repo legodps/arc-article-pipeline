@@ -98,5 +98,31 @@
         }
       }
     }
+  },
+  {
+    "globalID": "uvwx",
+    "questions": {
+      "nonDiagramQuestions": {
+        "number_1": {
+          "beingAsked": {
+            "processedText": "this question may be included"
+          },
+          "correctAnswer": {
+            "processedText": "a"
+          },
+          "answerChoices": {
+            "a": {
+              "processedText": "The answer is me!"
+            },
+            "b": {
+              "processedText": "The answer isn't me"
+            },
+            "c": {
+              "processedText": "The answer might be me"
+            }
+          }
+        }
+      }
+    }
   }
 ]

@@ -163,24 +163,45 @@ class TestLoadFiles(TestCase):
                     ]
                 },
                 'answerKey': 'c'
+            }],
+            'uvwx': [{
+                'id': '0',
+                'question': {
+                    'stem': 'this question may be included',
+                    'choices': [
+                        {
+                            'text': 'The answer is me!',
+                            'label': 'a'
+                        },
+                        {
+                            'text': 'The answer isn\'t me',
+                            'label': 'b'
+                        },
+                        {
+                            'text': 'The answer might be me',
+                            'label': 'c'
+                        }
+                    ]
+                },
+                'answerKey': 'a'
             }]
         }
         filename = 'tests/data-files/questions/test_questions_1'
-        questions_1, question_counts_1 = retrieve_questions(filename, ['abcd', 'efgh'])
+        questions_1, question_counts_1 = retrieve_questions(filename, ['abcd', 'efgh', 'uvwx'])
         self.assertEqual(
             expected_questions,
             questions_1,
             'it should load in the question file without a specified file extension'
         )
-        self.assertEqual({'2': 1, '3': 1, '4': 1}, question_counts_1)
+        self.assertEqual({'2': 1, '3': 2, '4': 1}, question_counts_1)
 
-        questions_2, question_counts_2 = retrieve_questions(f'{filename}.json', ['abcd', 'efgh'])
+        questions_2, question_counts_2 = retrieve_questions(f'{filename}.json', ['abcd', 'efgh', 'uvwx'])
         self.assertEqual(
             expected_questions,
             questions_2,
             'it should load in the question file with a specified file extension'
         )
-        self.assertEqual({'2': 1, '3': 1, '4': 1}, question_counts_2)
+        self.assertEqual({'2': 1, '3': 2, '4': 1}, question_counts_2)
 
     def test_read_json_questions_single_file(self):
         expected_single_file = {

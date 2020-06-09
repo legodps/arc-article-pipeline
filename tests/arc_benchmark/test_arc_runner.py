@@ -1,9 +1,10 @@
+import io
 import json
 import os
 import shutil
 import subprocess
 from unittest import TestCase
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, call
 from arc_benchmark.constants import ARC_DATA_SMALL_WIPE_KEEP_FILES, ARC_DATA_FULL_WIPE_KEEP_FILES
 from arc_benchmark.arc_runner import clean_checkpoints, copy_test_set, run_arc_on_index, evaluate_articles
 
@@ -68,7 +69,7 @@ class TestArcRunner(TestCase):
             shutil.rmtree(f'{os.getcwd()}/{fake_directory}')
 
     @patch('subprocess.run')
-    def test_run_arc_on_index(self, mock_run):
+    def test_run_arc_on_index_success(self, mock_run):
         mock_run.return_value = Mock(stdout=fake_response)
         config = {
             'conda_environment_name': 'fake_environment',
@@ -106,6 +107,50 @@ class TestArcRunner(TestCase):
             stderr=subprocess.PIPE,
             universal_newlines=True
         )
+
+    @patch('subprocess.run')
+    def test_run_arc_on_index_failure(self, mock_run):
+        mock_run.return_value = Mock(stdout='bongo', stderr='cat')
+        config = {
+            'conda_environment_name': 'fake_environment',
+            'arc_data_subdirectory': 'fake_subdirectory',
+            'arc_model_subdirectory': 'fake_directory'
+        }
+        with patch('sys.stdout') as mock_print:
+            results, individual_results = run_arc_on_index('fake_index', config)
+            self.assertEqual(
+                {},
+                results,
+                'if results cannot be extracted, it will return a blank results and print relevant output from the run'
+            )
+            mock_run.assert_called_once_with(
+                [
+                    'conda',
+                    'run',
+                    '-n',
+                    'fake_environment',
+                    'sh',
+                    'scripts/evaluate_solver.sh',
+                    'fake_subdirectory/ARC-Challenge-Test.jsonl',
+                    'fake_directory',
+                    'fake_index'
+                ],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True
+            )
+            mock_print.assert_has_calls([
+                call.write('************'),
+                call.write('\n'),
+                call.write('bongo'),
+                call.write('\n'),
+                call.write('************'),
+                call.write('\n'),
+                call.write('cat'),
+                call.write('\n'),
+                call.write('************'),
+                call.write('\n')
+            ])
 
     @patch('subprocess.run')
     def test_evaluate_article(self, mock_run):
@@ -153,15 +198,8 @@ class TestArcRunner(TestCase):
                 'arc_checkpoint_file': checkpoint_filename
             }
             index_files = {'index1': 'index_file', 'index2': 'index_file'}
-            question_set_indices = {'1': ['index1', 'index2']}
-            benchmark_set_filepaths = {'1': f'/{fake_directory}/{test_set_filename}'}
-            results = evaluate_articles(
-                index_files,
-                question_set_indices,
-                benchmark_set_filepaths,
-                f'{os.getcwd()}/{fake_directory_2}',
-                config
-            )
+            question_set_indices = {'1': ['index1', 'index2'], '2': ['electric boogaloo'], '3': ['In 3D']}
+            benchmark_set_filepaths = {'1': f'/{fake_directory}/{test_set_filename}', '3': 'not-real-directory'}
             expected_results = {
                 'index_file': [
                     {
@@ -202,10 +240,32 @@ class TestArcRunner(TestCase):
                     }
                 ]
             }
-            self.assertEqual(
-                expected_results,
-                results,
-                'it should load results for previously run indices and run the solver on the others'
-            )
+            with patch('sys.stdout') as mock_print:
+                results = evaluate_articles(
+                    index_files,
+                    question_set_indices,
+                    benchmark_set_filepaths,
+                    f'{os.getcwd()}/{fake_directory_2}',
+                    config
+                )
+                self.assertEqual(
+                    expected_results,
+                    results,
+                    'it should load results for previously run indices and run the solver on the others'
+                )
+                mock_print.assert_has_calls([
+                    call.write('##########################'),
+                    call.write('\n'),
+                    call.write('Full clean complete'),
+                    call.write('\n'),
+                    call.write('Full clean complete'),
+                    call.write('\n'),
+                    call.write('no question set found for 2'),
+                    call.write('\n'),
+                    call.write('Full clean complete'),
+                    call.write('\n'),
+                    call.write('no question set found for 3'),
+                    call.write('\n')
+                ])
             shutil.rmtree(f'{os.getcwd()}/{fake_directory}')
             shutil.rmtree(f'{os.getcwd()}/{fake_directory_2}')
