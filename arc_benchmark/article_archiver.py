@@ -107,7 +107,6 @@ def combine_indices(new_question_set_indices, question_set_indices):
         Returns:
             dict: the combined list of questions and indices
     """
-    print(question_set_indices)
     for question_set_key in new_question_set_indices:
         question_set_indices[question_set_key].append(new_question_set_indices[question_set_key][0])
     return question_set_indices

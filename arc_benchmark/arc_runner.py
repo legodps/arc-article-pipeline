@@ -132,6 +132,7 @@ def evaluate_articles(index_files, question_set_indices, benchmark_set_filepaths
                 checkpoint_file.write(json.dumps(results_entry) + '\n')
 
                 benchmark_results[index_files[index]].append({
+                    INDEX: index,
                     QUESTION_SET: question_set_id,
                     RESULTS: results,
                     INDIVIDUAL_RESULTS: individual_results
@@ -182,6 +183,7 @@ def evaluate_arc_index(benchmark_results, question_set_indices, benchmark_set_fi
             }
             checkpoint_file.write(json.dumps(results_entry) + '\n')
             benchmark_results[config[ARC_CORPUS_INDEX]].append({
+                INDEX: config[ARC_CORPUS_INDEX],
                 QUESTION_SET: question_set_id,
                 RESULTS: results,
                 INDIVIDUAL_RESULTS: individual_results

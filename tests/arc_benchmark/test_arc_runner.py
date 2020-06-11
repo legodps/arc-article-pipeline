@@ -1,4 +1,3 @@
-import io
 import json
 import os
 import shutil
@@ -6,7 +5,8 @@ import subprocess
 from unittest import TestCase
 from unittest.mock import Mock, patch, call
 from arc_benchmark.constants import ARC_DATA_SMALL_WIPE_KEEP_FILES, ARC_DATA_FULL_WIPE_KEEP_FILES
-from arc_benchmark.arc_runner import clean_checkpoints, copy_test_set, run_arc_on_index, evaluate_articles
+from arc_benchmark.arc_runner import clean_checkpoints, copy_test_set, run_arc_on_index, evaluate_articles, \
+    evaluate_arc_index
 
 fake_directory = 'fake_directory_dont_use'
 fake_response = 'unused text\n more unused text\n Metrics\n\n\n\nCorrect:1\nIncorrect:2\nUnanswered:3\n' \
@@ -223,6 +223,7 @@ class TestArcRunner(TestCase):
                         }
                     },
                     {
+                        'index': 'index2',
                         'question_set': '1',
                         'individual_results': {
                             '0': 'correct',
@@ -269,3 +270,132 @@ class TestArcRunner(TestCase):
                 ])
             shutil.rmtree(f'{os.getcwd()}/{fake_directory}')
             shutil.rmtree(f'{os.getcwd()}/{fake_directory_2}')
+
+    @patch('subprocess.run')
+    def test_evaluate_arc_index(self, mock_run):
+        fake_directory_2 = 'fake_directory_2'
+        if os.path.isdir(f'{os.getcwd()}/{fake_directory}') or os.path.isdir(f'{os.getcwd()}/{fake_directory_2}'):
+            self.assertTrue(
+                False,
+                f'directory of {fake_directory} and {fake_directory_2} is already in use, dont use it >:('
+            )
+        else:
+            mock_run.return_value = Mock(stdout=fake_response)
+            os.mkdir(f'{os.getcwd()}/{fake_directory}')
+            os.mkdir(f'{os.getcwd()}/{fake_directory_2}')
+            os.mkdir(f'{os.getcwd()}/{fake_directory_2}/fake_subdirectory')
+            checkpoint_filename = 'checkpoint_file.jsonl'
+            open(f'{os.getcwd()}/{fake_directory}/{test_set_filename}', 'a').close()
+            question_set_indices = {
+                '1': ['index1', 'index2'],
+                '2': ['electric boogaloo'],
+                '3': ['In 3D'],
+                '4': ['not here']
+            }
+            benchmark_set_filepaths = {
+                '1': f'/{fake_directory}/{test_set_filename}',
+                '2': f'/{fake_directory}/{test_set_filename}',
+                '3': 'not-real-directory'
+            }
+            config = {
+                'conda_environment_name': 'fake_environment',
+                'arc_data_subdirectory': 'fake_subdirectory',
+                'arc_model_subdirectory': 'fake_directory',
+                'checkpoint_directory': fake_directory,
+                'arc_checkpoint_file': checkpoint_filename,
+                'arc_corpus_index': 'asdf'
+            }
+            checkpoint_file = open(f'{os.getcwd()}/{fake_directory}/{checkpoint_filename}', 'a')
+            checkpoint_json = {
+                'index': 'asdf',
+                'question_set': '1',
+                'individual_results': {
+                    '0': 'correct',
+                    '1': 'correct',
+                    '2': 'incorrect',
+                    '3': 'incorrect',
+                    '4': 'incorrect',
+                    '5': 'unanswered',
+                    '6': 'unanswered',
+                    '7': 'unanswered',
+                    '8': 'unanswered'
+                },
+                'results': {
+                    'correct': 2,
+                    'incorrect': 3,
+                    'unanswered': 4
+                }
+            }
+            json.dump(checkpoint_json, checkpoint_file)
+            checkpoint_file.close()
+            expected_results = {
+                'abc': '123',
+                'asdf': [
+                    {
+                        'index': 'asdf',
+                        'question_set': '1',
+                        'individual_results': {
+                            '0': 'correct',
+                            '1': 'correct',
+                            '2': 'incorrect',
+                            '3': 'incorrect',
+                            '4': 'incorrect',
+                            '5': 'unanswered',
+                            '6': 'unanswered',
+                            '7': 'unanswered',
+                            '8': 'unanswered'
+                        },
+                        'results': {
+                            'correct': 2,
+                            'incorrect': 3,
+                            'unanswered': 4
+                        }
+                    },
+                    {
+                        'index': 'asdf',
+                        'question_set': '2',
+                        'individual_results': {
+                            '0': 'correct',
+                            '1': 'incorrect',
+                            '2': 'incorrect',
+                            '3': 'unanswered',
+                            '4': 'unanswered',
+                            '5': 'unanswered'
+                        },
+                        'results': {
+                            'correct': 1,
+                            'incorrect': 2,
+                            'unanswered': 3
+                        }
+                    }
+                ]
+            }
+            with patch('sys.stdout') as mock_print:
+                results = evaluate_arc_index(
+                    {'abc': '123'},
+                    question_set_indices,
+                    benchmark_set_filepaths,
+                    f'{os.getcwd()}/{fake_directory_2}',
+                    config
+                )
+                self.assertEqual(
+                    expected_results,
+                    results,
+                    'It should run results on the arc index only'
+                )
+                mock_print.assert_has_calls([
+                    call.write('Full clean complete'),
+                    call.write('\n'),
+                    call.write('Full clean complete'),
+                    call.write('\n'),
+                    call.write('Full clean complete'),
+                    call.write('\n'),
+                    call.write('no question set found for 3'),
+                    call.write('\n'),
+                    call.write('Full clean complete'),
+                    call.write('\n'),
+                    call.write('no question set found for 4'),
+                    call.write('\n')
+                ])
+                shutil.rmtree(f'{os.getcwd()}/{fake_directory}')
+                shutil.rmtree(f'{os.getcwd()}/{fake_directory_2}')
