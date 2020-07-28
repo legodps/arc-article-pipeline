@@ -112,6 +112,7 @@ def run_arc_benchmark(config_file, article_directory, question_directory, arc_so
         if not os.path.isfile(f'{config[CHECKPOINT_DIRECTORY]}/{config[FINAL_RESULTS_FILE]}'):
             analyze_results(benchmark_results, question_answer_counts, config)
             print('analysis complete')
+        print(question_answer_counts)
 
         analyze_questions(benchmark_results, config)
 

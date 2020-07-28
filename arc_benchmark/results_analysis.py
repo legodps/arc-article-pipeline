@@ -1,11 +1,12 @@
 from math import floor, ceil
-from arc_benchmark.constants import ARTICLE_COUNT, AVERAGE_CORRECT, AVERAGE_INCORRECT, AVERAGE_PERCENT_CORRECT, \
-    AVERAGE_PERCENT_INCORRECT, AVERAGE_PERCENT_UNANSWERED, AVERAGE_UNANSWERED, CHECKPOINT_DIRECTORY, CORRECT, \
-    CORRECT_STANDARD_DEVIATION, DECIMAL_DIGITS, DISAGREEMENT, FINAL_RESULTS_FILE, INCORRECT, \
-    INCORRECT_STANDARD_DEVIATION, INDIVIDUAL_QUESTION_METRICS_FILE, INDIVIDUAL_RESULTS, PERCENT_CORRECT, \
-    PERCENT_INCORRECT, PERCENT_UNANSWERED, RANDOM_ANSWERING, RESULTS, QUESTION_COUNT, QUESTION_ID, QUESTION_SET, \
-    QUESTION_SET_METRICS_FILE, TOTAL_CORRECT, TOTAL_INCORRECT, TOTAL_UNANSWERED, UNANSWERED, \
-    UNANSWERD_STANDARD_DEVIATION
+from scipy.stats import sem
+from arc_benchmark.constants import ARTICLE_COUNT, AVERAGE_CORRECT, AVERAGE_INCORRECT, AVERAGE_INFORMATIVENESS, \
+    AVERAGE_PERCENT_CORRECT, AVERAGE_PERCENT_INCORRECT, AVERAGE_PERCENT_UNANSWERED, AVERAGE_UNANSWERED, \
+    CHECKPOINT_DIRECTORY, CORRECT, CORRECT_STANDARD_DEVIATION, DECIMAL_DIGITS, DISAGREEMENT, FINAL_RESULTS_FILE, \
+    INCORRECT, INCORRECT_STANDARD_DEVIATION, INDIVIDUAL_QUESTION_METRICS_FILE, INDIVIDUAL_RESULTS, \
+    INFORMATIVENESS_STANDARD_ERROR, PERCENT_CORRECT, PERCENT_INCORRECT, PERCENT_UNANSWERED, RANDOM_ANSWERING, RESULTS, \
+    QUESTION_COUNT, QUESTION_ID, QUESTION_SET, QUESTION_SET_METRICS_FILE, TOTAL_CORRECT, TOTAL_INCORRECT, \
+    TOTAL_INFORMATIVENESS, TOTAL_UNANSWERED, UNANSWERED, UNANSWERD_STANDARD_DEVIATION
 from arc_benchmark.file_utils import store_json
 
 
@@ -50,12 +51,26 @@ def analyze_results(benchmark_results, question_answer_counts, config):
         correct = 0
         incorrect = 0
         unanswered = 0
+        question_set_informativeness = []
         for index_entry in benchmark_results[file]:
             if len(index_entry[RESULTS].keys()) > 0:
                 correct += index_entry[RESULTS][CORRECT]
                 incorrect += index_entry[RESULTS][INCORRECT]
                 unanswered += index_entry[RESULTS][UNANSWERED]
-        file_results[file] = {CORRECT: correct, INCORRECT: incorrect, UNANSWERED: unanswered}
+                question_set_informativeness.append(
+                    index_entry[RESULTS][CORRECT] / (index_entry[RESULTS][CORRECT] + index_entry[RESULTS][INCORRECT]
+                                                     + index_entry[RESULTS][UNANSWERED])
+                )
+        file_results[file] = {
+            CORRECT: correct,
+            INCORRECT: incorrect,
+            UNANSWERED: unanswered,
+            TOTAL_INFORMATIVENESS: round(correct / (correct + incorrect + unanswered), DECIMAL_DIGITS),
+            AVERAGE_INFORMATIVENESS: round(
+                sum(question_set_informativeness)/len(question_set_informativeness), DECIMAL_DIGITS
+            ),
+            INFORMATIVENESS_STANDARD_ERROR: round(sem(question_set_informativeness), DECIMAL_DIGITS)
+        }
         count += 1
 
     print('##############')
