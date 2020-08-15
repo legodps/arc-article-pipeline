@@ -66,11 +66,7 @@ def run_arc_benchmark(config_file, article_directory, question_directory, arc_so
               f'file. It is a required property to run the benchmark')
     elif BENCHMARK_SET_DIRECTORY not in config or not isinstance(config[BENCHMARK_SET_DIRECTORY], str):
         print(f'ERROR: {BENCHMARK_SET_DIRECTORY} either is not a string or is not defined via the config file. '
-              'It is a required property to run the benchmark.')
-    elif TESTS_DIRECTORY in config[BENCHMARK_SET_DIRECTORY] or ENV_DIRECTORY in config[BENCHMARK_SET_DIRECTORY] \
-            or ARC_BENCHMARK_DIRECTORY in config[BENCHMARK_SET_DIRECTORY] \
-            or HTMLCOV_DIRECTORY in config[BENCHMARK_SET_DIRECTORY]:
-        print(f'Do not set {BENCHMARK_SET_DIRECTORY} to any critical or already used directories.')
+           f'Do not set {BENCHMARK_SET_DIRECTORY} to any critical or already used directories.')
     else:
         benchmark_results = load_json(config[ARC_RESULTS_FILE], config)
 

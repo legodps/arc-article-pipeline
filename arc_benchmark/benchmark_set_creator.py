@@ -75,4 +75,11 @@ def create_test_sets(question_directory, question_set_ids, config):
     create_or_clean_directory(config)
 
     question_sets, question_answer_counts = read_json_questions(question_directory, question_set_ids)
+    for question in question_sets['L_0031']:
+        #print(f'Question Number: {question["id"]}')
+        #print(f'Question Text: {question["question"]["stem"]}')
+        #for choice in question["question"]['choices']:
+        #    print(f'\t{choice["label"]}: {choice["text"]}')
+        #print(f'Correct Answer: {question["answerKey"]}')
+        #print('\n')
     return store_question_sets(question_sets, question_set_ids, config), question_answer_counts
