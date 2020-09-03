@@ -139,18 +139,6 @@ class TestArcRunner(TestCase):
                 stderr=subprocess.PIPE,
                 universal_newlines=True
             )
-            mock_print.assert_has_calls([
-                call.write('************'),
-                call.write('\n'),
-                call.write('bongo'),
-                call.write('\n'),
-                call.write('************'),
-                call.write('\n'),
-                call.write('cat'),
-                call.write('\n'),
-                call.write('************'),
-                call.write('\n')
-            ])
 
     @patch('subprocess.run')
     def test_evaluate_article(self, mock_run):

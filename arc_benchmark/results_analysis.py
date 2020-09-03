@@ -47,6 +47,7 @@ def analyze_results(benchmark_results, question_answer_counts, config):
 
     file_results = {RANDOM_ANSWERING: baseline_results}
     count = 1
+
     for file in benchmark_results.keys():
         correct = 0
         incorrect = 0
@@ -72,6 +73,7 @@ def analyze_results(benchmark_results, question_answer_counts, config):
             INFORMATIVENESS_STANDARD_ERROR: round(sem(question_set_informativeness), DECIMAL_DIGITS)
         }
         count += 1
+        print(correct + incorrect + unanswered)
 
     print('##############')
     store_json(file_results, config[FINAL_RESULTS_FILE], config)

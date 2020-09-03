@@ -2,7 +2,7 @@ import json
 import sys
 
 
-RUNS_TO_COMPARE = ['tqa', 'dangnt-nlp']
+RUNS_TO_COMPARE = ['tqa', 'rerank2-bert']
 CHECKPOINT_FILE = 'checkpoints/arc_runner_checkpoints.jsonl'
 
 BOTH_CORRECT = 'both_correct'
@@ -12,23 +12,28 @@ CORRECT = 'correct'
 INCORRECT = 'incorrect'
 INDEX = 'index'
 INDIVIDUAL_RESULTS = 'individual_results'
+RESULTS = 'results'
 UNANSWERED = 'unanswered'
+QUESTION_SET = 'question_set'
 
 
 def load_and_filter_checkpoints():
     filtered_results = {}
+    count = 0
     for run in RUNS_TO_COMPARE:
         filtered_results[run] = {}
     with open(CHECKPOINT_FILE, 'r') as checkpoint_file:
         line = checkpoint_file.readline()
-        json_line = json.loads(line)
         while line:
             json_line = json.loads(line)
             for run in RUNS_TO_COMPARE:
                 if json_line[INDEX][:len(run)] == run:
+                    count += 1
                     cleaned_article_name = json_line[INDEX][len(run):].replace('-', '')
-                    filtered_results[run][cleaned_article_name] = json_line
+                    question_id = json_line[QUESTION_SET]
+                    filtered_results[run][f'{cleaned_article_name}-{question_id}'] = json_line
             line = checkpoint_file.readline()
+    print(count)
     return filtered_results
 
 
@@ -36,12 +41,24 @@ def calculate_confusion(results):
     """
 
     """
+    bulk_results = {
+        RUNS_TO_COMPARE[0]: {
+            CORRECT: 0,
+            INCORRECT: 0,
+            UNANSWERED: 0
+        },
+        RUNS_TO_COMPARE[1]: {
+            CORRECT: 0,
+            INCORRECT: 0,
+            UNANSWERED: 0
+        }
+    }
     # assumes both have same articles
-    articles = list(results[RUNS_TO_COMPARE[0]].keys())
+    articles = list(results[RUNS_TO_COMPARE[1]].keys())
 
     run_results_by_question = {}
 
-    #print(results[RUNS_TO_COMPARE[1]]['-the-sun-and-the-earth-moon-system'])
+    print(len(articles))
 
     for article in articles:
         for question_id in list(results[RUNS_TO_COMPARE[0]][article][INDIVIDUAL_RESULTS].keys()):
@@ -50,6 +67,10 @@ def calculate_confusion(results):
                 #print(results[run])
                 run_results_by_question[(article, question_id)][run] = \
                     results[run][article][INDIVIDUAL_RESULTS][question_id]
+        for run in RUNS_TO_COMPARE:
+            bulk_results[run][CORRECT] += results[run][article][RESULTS][CORRECT]
+            bulk_results[run][INCORRECT] += results[run][article][RESULTS][INCORRECT]
+            bulk_results[run][UNANSWERED] += results[run][article][RESULTS][UNANSWERED]
 
     confusion_matrix = {
         f'{RUNS_TO_COMPARE[0]}_{CORRECT}_{RUNS_TO_COMPARE[1]}_{CORRECT}': 0,
@@ -62,6 +83,7 @@ def calculate_confusion(results):
         f'{RUNS_TO_COMPARE[0]}_{UNANSWERED}_{RUNS_TO_COMPARE[1]}_{INCORRECT}': 0,
         f'{RUNS_TO_COMPARE[0]}_{UNANSWERED}_{RUNS_TO_COMPARE[1]}_{UNANSWERED}': 0
     }
+    print(bulk_results)
 
     for article_question_tuple in run_results_by_question.keys():
         run_1_results = run_results_by_question[article_question_tuple][RUNS_TO_COMPARE[0]]

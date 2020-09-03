@@ -3,6 +3,8 @@ import os
 import shutil
 from unittest import TestCase
 from math import sqrt
+from numpy import nan
+from scipy.stats import sem
 from arc_benchmark.constants import DECIMAL_DIGITS
 from arc_benchmark.results_analysis import analyze_questions, analyze_results, calculate_baselines, \
     calculate_results_standard_deviation, calculate_disagreement, calculate_individual_question_metrics, \
@@ -39,6 +41,7 @@ class TestResultsAnalysis(TestCase):
                     {'results': {'correct': 2, 'incorrect': 3, 'unanswered': 4}},
                 ],
                 'file2': [
+                    {'results': {'correct': 3, 'incorrect': 4, 'unanswered': 5}},
                     {'results': {'correct': 3, 'incorrect': 4, 'unanswered': 5}}
                 ]
             }
@@ -49,8 +52,12 @@ class TestResultsAnalysis(TestCase):
             analyze_results(benchmark_results, test_question_counts, config)
             expected_results = {
                 'random_answering': {'correct': 4, 'incorrect': 6, 'unanswered': 0},
-                'file1': {'correct': 3, 'incorrect': 5, 'unanswered': 7},
-                'file2': {'correct': 3, 'incorrect': 4, 'unanswered': 5}
+                'file1': {'average_informativeness': round((1/6 + 2/9)/2, DECIMAL_DIGITS), 'correct': 3, 'incorrect': 5,
+                          'informativeness_standard_error': round(sem([1/6, 2/9]), DECIMAL_DIGITS),
+                          'total_informativeness': 0.2, 'unanswered': 7},
+                'file2': {'average_informativeness': 0.25, 'correct': 6, 'incorrect': 8,
+                          'informativeness_standard_error': 0.0, 'total_informativeness': 0.25,
+                          'unanswered': 10}
             }
             results_file = open(f'{os.getcwd()}{fake_directory}/{results_filename}', 'r')
             actual_results = json.load(results_file)

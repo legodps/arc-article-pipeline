@@ -94,6 +94,12 @@ def load_and_store_articles(article_directory, es, bulk, config):
             dict: a list of Elasticsearch indices by the set of questions they are associated with
     """
     articles = read_jsonl_articles(article_directory)
+    #for article in articles:
+        #print(article['title'])
+        #if article['title'] in ['rerank2_bert-darwin\'s theory of evolution', 'uvabottomup2-darwin\'s theory of evolution', 'dangnt-nlp-darwin\'s theory of evolution']:
+        #    print(article['title'])
+        #    print(article['text'])
+        #    print('\n')
     return store_articles(articles, es, bulk, config)
 
 
@@ -127,5 +133,11 @@ def load_and_store_tqa_articles(question_set_indices, es, bulk, config):
             dict: a dict of files associated with their indices, used later in calculating results
     """
     articles = load_tqa_articles(question_set_indices, config)
+    #for article in articles:
+        # print(article['title'])
+    #    if article['title'] in ['tqa-darwins theory of evolution']:
+     #       print(article['title'])
+      #      print(article['text'])
+       #     print('\n')
     tqa_question_set_indices, index_files = store_articles(articles, es, bulk, config)
     return combine_indices(tqa_question_set_indices, question_set_indices), index_files
