@@ -2,7 +2,7 @@ import json
 import os
 import shutil
 import subprocess
-from time import sleep
+import time
 from arc_benchmark.file_utils import create_or_load_arc_checkpoint
 from arc_benchmark.constants import ADDENDUM_RESULTS, ARC_CHALLENGE_TEST, ARC_CORPUS_INDEX, \
     ARC_DATA_FULL_WIPE_KEEP_FILES, ARC_DATA_SMALL_WIPE_KEEP_FILES, ARC_DATA_SUBDIRECTORY, ARC_MODEL_SUBDIRECTORY, \
@@ -123,6 +123,7 @@ def evaluate_articles(index_files, question_set_indices, benchmark_set_filepaths
             if (index, question_set_id) in completed_entries.keys():
                 benchmark_results[index_files[index]].append(completed_entries[(index, question_set_id)])
             else:
+                results = {}
                 try:
                     results, individual_results = run_arc_on_index(index, config)
                 except:
@@ -133,7 +134,7 @@ def evaluate_articles(index_files, question_set_indices, benchmark_set_filepaths
                 if CORRECT not in results.keys():
                     retry = 0
                     while retry < 10 and CORRECT not in results.keys():
-                        sleep(10)
+                        time.sleep(10)
                         try:
                             results, individual_results = run_arc_on_index(index, config)
                         except:

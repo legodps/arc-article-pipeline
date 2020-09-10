@@ -166,7 +166,7 @@ The benchmark operates in 3 steps.
 # Testing Instructions
 To see if unit tests pass and the coverage level run the following commands
 ```
-coverage run --omit=tests/**,**/__init__.py,env/** -m unittest
+coverage run --omit=tests/**,**/__init__.py,env/** -m unittest 
 coverage report
 coverage html
 ```

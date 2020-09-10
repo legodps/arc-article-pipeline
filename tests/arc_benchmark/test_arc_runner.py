@@ -260,6 +260,50 @@ class TestArcRunner(TestCase):
             shutil.rmtree(f'{os.getcwd()}/{fake_directory_2}')
 
     @patch('subprocess.run')
+    def test_evaluate_articles_failure(self, mock_run):
+        fake_directory_2 = 'fake_directory_2'
+        if os.path.isdir(f'{os.getcwd()}/{fake_directory}') or os.path.isdir(f'{os.getcwd()}/{fake_directory_2}'):
+            self.assertTrue(
+                False,
+                f'directory of {fake_directory} and {fake_directory_2} is already in use, dont use it >:('
+            )
+        else:
+            mock_run.side_effect = Exception('failed to run pipeline')
+            mock_run.return_value = None
+            os.mkdir(f'{os.getcwd()}/{fake_directory}')
+            os.mkdir(f'{os.getcwd()}/{fake_directory_2}')
+            os.mkdir(f'{os.getcwd()}/{fake_directory_2}/fake_subdirectory')
+            open(f'{os.getcwd()}/{fake_directory}/{test_set_filename}', 'a').close()
+            checkpoint_filename = 'checkpoint_file.jsonl'
+            config = {
+                'conda_environment_name': 'fake_environment',
+                'arc_data_subdirectory': 'fake_subdirectory',
+                'arc_model_subdirectory': 'fake_directory',
+                'checkpoint_directory': fake_directory,
+                'arc_checkpoint_file': checkpoint_filename
+            }
+            index_files = {'index1': 'index_file'}
+            question_set_indices = {'1': ['index1']}
+            benchmark_set_filepaths = {'1': f'/{fake_directory}/{test_set_filename}'}
+            with patch('time.sleep', return_value=None) as mock_sleep:
+                results = evaluate_articles(
+                    index_files,
+                    question_set_indices,
+                    benchmark_set_filepaths,
+                    f'{os.getcwd()}/{fake_directory_2}',
+                    config
+                )
+                self.assertEqual(
+                    {'index_file': []},
+                    results,
+                    'it should fail to get any results when retry attempts fail'
+                )
+                self.assertEqual(10, mock_sleep.call_count)
+                self.assertEqual(11, mock_run.call_count)
+            shutil.rmtree(f'{os.getcwd()}/{fake_directory}')
+            shutil.rmtree(f'{os.getcwd()}/{fake_directory_2}')
+
+    @patch('subprocess.run')
     def test_evaluate_arc_index(self, mock_run):
         fake_directory_2 = 'fake_directory_2'
         if os.path.isdir(f'{os.getcwd()}/{fake_directory}') or os.path.isdir(f'{os.getcwd()}/{fake_directory_2}'):
