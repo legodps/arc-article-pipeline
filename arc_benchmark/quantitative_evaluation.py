@@ -18,6 +18,11 @@ QUESTION_SET = 'question_set'
 
 
 def load_and_filter_checkpoints():
+    """ Loads the checkpoint results from the EXAM checkpoint file and imports the relevant runs
+
+        Returns:
+            dict: the results of each run of the Decompatt model for each algorithm run
+    """
     filtered_results = {}
     count = 0
     for run in RUNS_TO_COMPARE:
@@ -33,13 +38,18 @@ def load_and_filter_checkpoints():
                     question_id = json_line[QUESTION_SET]
                     filtered_results[run][f'{cleaned_article_name}-{question_id}'] = json_line
             line = checkpoint_file.readline()
-    print(count)
     return filtered_results
 
 
 def calculate_confusion(results):
-    """
+    """ Calculates a semi-confusion matrix based on the Correct, Incorrect, or Unanswered questions of each
+        algorithm run
 
+        Args:
+            results (dict): the loaded results for each algorithm run for each question set
+
+        Returns:
+            dict: the confusion matrix for the compared Correct, Incorrect, and Unanswered questions
     """
     bulk_results = {
         RUNS_TO_COMPARE[0]: {
@@ -58,13 +68,10 @@ def calculate_confusion(results):
 
     run_results_by_question = {}
 
-    print(len(articles))
-
     for article in articles:
         for question_id in list(results[RUNS_TO_COMPARE[0]][article][INDIVIDUAL_RESULTS].keys()):
             run_results_by_question[(article, question_id)] = {}
             for run in RUNS_TO_COMPARE:
-                #print(results[run])
                 run_results_by_question[(article, question_id)][run] = \
                     results[run][article][INDIVIDUAL_RESULTS][question_id]
         for run in RUNS_TO_COMPARE:
@@ -93,8 +100,8 @@ def calculate_confusion(results):
 
 
 def calculate_gold_versus_best_overlap():
-    """
-
+    """ Orchestrates the calculation of the confusion matrix between two algorithm runs and prints the results to
+        the console
     """
     if len(RUNS_TO_COMPARE) > 2:
         print('ERROR: should only be run on 2 systems')

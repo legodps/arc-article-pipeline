@@ -89,15 +89,26 @@ metric_rankings = {
 
 
 def decide_tie(tied_algorithms):
-    """
+    """ Randomly orders a list of algorithms that are tied
 
+        Args:
+            tied_algorithms (list): a list of algorithms that are all tied
+
+        Returns:
+            list: a randomly permuted list sampled without replacement from tied_algorithms
     """
     return random.sample(tied_algorithms, len(tied_algorithms))
 
 
 def generate_randomized_rankings(ranking, run_count):
-    """
+    """ Generates run_count number of lists, if a ranking has any ties, randomize the ties to create a permuted list
 
+        Args:
+            ranking (dict): contains the order and ties of a ranking of algorithm runs
+            run_count (int): the number of rankings that should be generated
+
+        Returns:
+            list: a list containing all of the rankings generated from an initial ranking
     """
     randomized_rankings = []
     count = 0
@@ -120,8 +131,13 @@ def generate_randomized_rankings(ranking, run_count):
 
 
 def correlate_rankings(randomized_rankings):
-    """
+    """ Calculates the kendall's Tau and Spearman's rank correlation between two rankings
 
+        Args:
+            randomized_rankings (dict): a dictionary containing the generated rankings to be evaluated for correlation
+
+        Returns:
+            dict: a dictionary containing the correlations between all metrics per generated ranking
     """
     metric_correlations = {}
     metric_index = 0
@@ -150,6 +166,15 @@ def correlate_rankings(randomized_rankings):
 
 
 def aggregate_correlations(correlation_results):
+    """ Calculates an average and standard deviation for each group of correlations calculated for each generated
+        ranking
+
+        Args:
+            correlation_results (dict): the correlation lists by each metric and correlation statistic
+
+        Returns:
+            dict: the dictionary of average and standard deviation of each metric by the correlation statistic
+    """
     aggregated_correlations = {}
     for metric_tuple in correlation_results.keys():
         if f'{(metric_tuple[0], metric_tuple[1])}' not in aggregated_correlations.keys():
@@ -166,8 +191,12 @@ def aggregate_correlations(correlation_results):
 
 
 def calculate_correlation(rankings, random_reruns=10):
-    """
+    """ Orchestrates the calculation of the average correlation between each metric and stores the results in a json
+        file
 
+        Args:
+            rankings (dict): a dict of dicts containing the metric rankings and ties
+            random_reruns (int): (optional) the number of randomized rerankings to make ties fair
     """
     randomized_rankings = {}
     for ranking_name in rankings.keys():

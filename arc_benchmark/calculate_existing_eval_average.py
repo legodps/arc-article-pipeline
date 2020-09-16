@@ -15,6 +15,11 @@ NDCG = 'ndcg_cut_20'
 
 
 def load_eval_results():
+    """ Imports the MAP, Precision at R, and NDCG at 20 results from evalall files based on the TREC CAR results
+
+        Returns:
+            dict: the individual metric values for each algorithm run
+    """
     print('Loading in *.run.evalall files')
     eval_files = [file for file in os.listdir(EVAL_DIRECTORY) if os.path.isfile(os.path.join(EVAL_DIRECTORY, file))]
     individual_eval_files = [file for file in eval_files if FILE_EXTENSION in file]
@@ -30,7 +35,6 @@ def load_eval_results():
             while line:
                 cleaned_line = re.sub(r"\s+", '#', line).split('#')
                 metric = cleaned_line[0]
-                #article_id = cleaned_line[1].split(':')[1].split('/')[0]
                 value = float(cleaned_line[2])
                 if MAP in metric:
                     individual_file_results[MAP].append(value)
@@ -46,6 +50,9 @@ def load_eval_results():
 
 
 def calculate_averages(file_results):
+    """ Calculates the average and standard deviation of MAP, Precision at R, and NDCG at 20
+
+    """
     print(f'Calculating averages and standard deviations for {len(file_results.keys())} files')
     aggregated_results = {}
     for file_name in file_results.keys():
@@ -68,6 +75,9 @@ def calculate_averages(file_results):
 
 
 def calculate_averages_and_std_dev():
+    """ Orchestrates the calculation of the average and standard deviation of the existing TREC CAR metrics and stores
+        the results in a json file
+    """
     individual_run_results = load_eval_results()
     aggregated_results = calculate_averages(individual_run_results)
 
