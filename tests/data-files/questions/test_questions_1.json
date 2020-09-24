@@ -1,0 +1,128 @@
+[
+  {
+    "globalID": "abcd",
+    "questions": {
+      "nonDiagramQuestions": {
+        "question_0": {
+          "beingAsked": {
+            "processedText": "this is the first question being asked"
+          },
+          "correctAnswer": {
+            "processedText": "a"
+          },
+          "answerChoices": {
+            "a": {
+              "processedText": "this is the first answer"
+            },
+            "b": {
+              "processedText": "this is the second answer"
+            }
+          }
+        },
+        "question_1": {
+          "beingAsked": {
+            "processedText": "this is the second question being asked"
+          },
+          "correctAnswer": {
+            "processedText": "b"
+          },
+          "answerChoices": {
+            "a": {
+              "processedText": "answer one"
+            },
+            "b": {
+              "processedText": "answer two"
+            },
+            "c": {
+              "processedText": "answer three"
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "globalID": "efgh",
+    "questions": {
+      "nonDiagramQuestions": {
+        "number_1": {
+          "beingAsked": {
+            "processedText": "this is the third question being asked"
+          },
+          "correctAnswer": {
+            "processedText": "c"
+          },
+          "answerChoices": {
+            "a": {
+              "processedText": "The first answer is correct"
+            },
+            "b": {
+              "processedText": "The second answer is correct"
+            },
+            "c": {
+              "processedText": "The third answer is correct"
+            },
+            "d": {
+              "processedText": "The fourth answer is correct"
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "globalID": "qrst",
+    "questions": {
+      "nonDiagramQuestions": {
+        "number_1": {
+          "beingAsked": {
+            "processedText": "this is the fourth question but it won't be included"
+          },
+          "correctAnswer": {
+            "processedText": "c"
+          },
+          "answerChoices": {
+            "a": {
+              "processedText": "The first answer is correct"
+            },
+            "b": {
+              "processedText": "The second answer is correct"
+            },
+            "c": {
+              "processedText": "The third answer is correct"
+            },
+            "d": {
+              "processedText": "The fourth answer is correct"
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "globalID": "uvwx",
+    "questions": {
+      "nonDiagramQuestions": {
+        "number_1": {
+          "beingAsked": {
+            "processedText": "this question may be included"
+          },
+          "correctAnswer": {
+            "processedText": "a"
+          },
+          "answerChoices": {
+            "a": {
+              "processedText": "The answer is me!"
+            },
+            "b": {
+              "processedText": "The answer isn't me"
+            },
+            "c": {
+              "processedText": "The answer might be me"
+            }
+          }
+        }
+      }
+    }
+  }
+]

@@ -3,3 +3,6 @@
 .coverage
 htmlcov
 env/**
+arc-questions/**
+question-sets/**
+checkpoints/**
