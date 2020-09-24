@@ -1,10 +1,10 @@
 # Properties you might need/want to change
 host: 'localhost'
 port: 9200
-article_directory: '../generated_articles'
-question_directory: 'question-for-extraction/tqa_v1_train.json'
-arc_solver_directory: '../ARC-Solvers'
-conda_environment_name: 'allennlp'
+article_directory: 'directory/to/jsonl/article/files'
+question_directory: 'directory/to/TQA/jsonl/data/file'
+arc_solver_directory: 'directory/path/to/ARC/outer/directory'
+conda_environment_name: 'conda-environment-name-here'
 
 # Properties you probably shouldn't change
 benchmark_set_directory: '/question-sets'

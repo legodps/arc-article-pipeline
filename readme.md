@@ -1,8 +1,8 @@
-# ARC Benchmark
-The ARC Benchmark is a tool designed to read in articles and evaluate them on a set of questions to see how informative
-or useful they are. This Benchmark tool is Designed to use questions from the 
-[TQA question data set from](http://data.allenai.org/tqa/) dataset, specifically: "tqa_v1_train.json" and JSONL articles
-formatted in a particular way (ToDo clarify this)
+# EXAM
+EXAM is a tool designed to read in articles and evaluate them on a set of questions to see how informative
+or useful they are. The score produced, sometimes referred to as "informativeness", is called the EXAM score. This 
+tool is designed to use questions from the  [TQA question data set from](http://data.allenai.org/tqa/) 
+dataset, specifically: "tqa_v1_train.json" and JSONL articles formatted in a particular way (ToDo clarify this)
 
 # Setup Instructions
 
@@ -97,7 +97,7 @@ In addition to terminal arguments, you can configure the benchmark via a yaml fi
     overridden if a different path is specified via terminal arguments. This is provided for convenience of multiple
     runs.
 * `arc_solver_directory`: the filepath to where the base ARC-Solver directory is. This config setting is overridden if a
-    different path is specified via terminal arguments. This is provided for convenience of multiple runs
+    different path is specified via terminal arguments. This is provided for convenience of multiple runs.
 * `conda_environment_name`: as part of the setup of the ARC-Solver project, you need to create a conda environment,
     much like a python environment. This must be set to the name of the conda environment you created as part of that
     setup.
@@ -117,7 +117,7 @@ In addition to terminal arguments, you can configure the benchmark via a yaml fi
 * `final_results_file`: the file containing the digested results of the different article methods are stored in.
 * `individual_question_results_file`: the file containing the results of individual questions on individual articles.
 * `arc_corpus_index`: the index that ARC-Solver default corpus will be stored at. Once saved, it is strongly advised you
-    do not change this.
+    do not change this. If you are not using any ARC data you don't need to worry about this, changing it or otherwise.
 * `max_question_disagreement`: the maximum percentage of articles allowed to disagree on the results of a run before
     the benchmark considers a question to lack consensus. This is used in evaluating the results.
 * `mapping`: the Elasticsearch index map. This is used to configure the indices of the articles for the best retrieval.
@@ -136,7 +136,8 @@ source elasticsearch
 ```
 
 ### 2. Update Elasticsearch shart count
-Once Elasticsearch is ready, open up a different terminal window and run the following command
+Once Elasticsearch is ready, open up a different terminal window and run the following command if you have over 1000
+articles.
 ```
 curl -XPUT localhost:9200/_cluster/settings -H 'Content-type: application/json' --data-binary $'{"transient":{"cluster.max_shards_per_node":2500}}'
 ```
@@ -155,16 +156,22 @@ This may take a number of hours to run, as the benchmark needs to extract questi
 to Elasticsearch, then run the benchmark. Each individual run of the benchmark takes a hair under 20 seconds on my
 laptop. All told, it took around 12 hours to run.
 
-ToDo: update about how to handle extended run issues.
+With the additional shards introduced, I have noticed an issue where ARC/elasticsearch gets bogged down on my local
+machine. It causes errors, and retrying the operation a couple times works. However, if you see it restarting a lot in
+the logs, I recommend you shut down the progress and reboot your computer. The checkpoint file will keep your progress
+so nothing will be lost, and it will likely help Elasticsearch process the requests faster. There may be a way to fix
+this on the Elasticsearch side by giving it more memory but I couldn't get it to work.
 
-### What does the ARC Benchmark Do?
-The benchmark operates in 3 steps.
+### What does EXAM Do?
+IT operates in 3 steps.
 1. Loads in articles and stores them to Elasticsearch
 2. Loads in questions and stores them in JSONL files for later use
 3. Runs the ARC-Solvers against a series of articles and question sets
 
 # Testing Instructions
-To see if unit tests pass and the coverage level run the following commands
+To see if unit tests pass and the coverage level run the following commands. All tested files should be at 100%
+coverage. Some additional scripts are included in the main directory though they are just scripts used to calculate
+results used in the associated paper.
 ```
 coverage run --omit=tests/**,**/__init__.py,env/** -m unittest 
 coverage report
@@ -177,3 +184,19 @@ web-browsable version to allow you to look visually where coverage is missing an
 If you get a "read-only" issue from Elasticsearch, this could be due to how much free space is left on your system. If
 your hard drive is 95% full, it will not let you re-index documents. Clear up some space on your hard drive and try
 again.
+
+# Additional Scripts
+Several scripts have been included to help calculate results, we describe them briefly here if people wish to validate
+our results the way we originally calculated them.
+
+* `calculate_correlation.py`: calculates the correlation between the different metrics used in our work. It is
+    prepopulated with all the information you need but will need changed if you use different articles.
+* `calculate_existing_eval_average.py`: calculates the average of NDCG@20, MAP, and Precision at R for the TREC CAR
+    Y3 data, unless you wish to validate the results of our tables you shouldn't need this. If you do wish to use this,
+    you may need to change the directory information in the script
+* `calculate_rouge.py`: calculates the ROUGE-1 precision, recall, and f1 for a set of articles versus the TQA data,
+    if you wish to use this you will need to change the directory locations to the appropriate position
+* `quantitative_evaluation.py`: examines overlap or distinction between two different sets of articles in how they
+    sucessfully or unsuccessfully answer questions.
+
+
