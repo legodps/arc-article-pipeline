@@ -9,6 +9,8 @@ from arc_benchmark.constants import ADDENDUM_RESULTS, ARC_CHALLENGE_TEST, ARC_CO
     CONDA_ENVIRONMENT_NAME, CORRECT, EVALUATE_SOLVER_FILEPATH, INCORRECT, INDEX, INDIVIDUAL_RESULTS, METRICS, \
     QUESTION_SET, RESULTS, UNANSWERED
 
+# ToDo: Confirm if TQA is required for this and adjust if so
+
 
 def clean_checkpoints(arc_solver_directory, config, full_reset=False):
     """ Cleans out files from the data directory, including the test set if it is a full reset
