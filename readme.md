@@ -199,4 +199,6 @@ our results the way we originally calculated them.
 * `quantitative_evaluation.py`: examines overlap or distinction between two different sets of articles in how they
     sucessfully or unsuccessfully answer questions.
 
-
+# Creating your own Questions and Articles
+If you wish to run EXAM on a different list of questions and your own articles, I recommend you look at
+[Creating Questions](createquestions.md) and [Creating Articles](createarticles.md).
