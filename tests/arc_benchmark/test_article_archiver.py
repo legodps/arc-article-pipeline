@@ -193,7 +193,7 @@ class TestArticleArchiver(TestCase):
         create_mock = Mock(return_value=True)
         es_mock = Mock(indices=Mock(exists=exists_mock, create=create_mock))
         mock_bulk = Mock(return_value=True)
-        fake_config = {'mapping': {}, 'question_directory': f'{os.getcwd()}/tests/data-files/articles/test_tqa.json'}
+        fake_config = {'mapping': {}, 'tqa_directory': f'{os.getcwd()}/tests/data-files/articles/test_tqa.json'}
         question_set_indices, index_files = article_archiver.load_and_store_tqa_articles(
             {'manta': ['fake-article-0'], 'ray': ['fake-article-2']},
             es_mock,

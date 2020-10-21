@@ -101,6 +101,9 @@ In addition to terminal arguments, you can configure the benchmark via a yaml fi
 * `conda_environment_name`: as part of the setup of the ARC-Solver project, you need to create a conda environment,
     much like a python environment. This must be set to the name of the conda environment you created as part of that
     setup.
+* `tqa_directory`: the filepath to where the TQA dataset file is used to load in TQA articles. This has been separated
+    from the `question_directory` property since you may want to use questions not from the TQA but still use the
+    articles. If you omit this property, it will not look to insert TQA articles
 
 ### Properties you probably shouldn't change
 * `benchmark_set_directory`: the filepath where questions sets should be saved to. DO NOT NAME IT TO ANY EXISTING 

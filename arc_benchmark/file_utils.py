@@ -4,7 +4,7 @@ from arc_benchmark.constants import ADJUNCT_TOPICS, ANSWER_CHOICES, ANSWER_KEY, 
     CHECKPOINT_DIRECTORY, CHOICES, CONTENT, CORRECT_ANSWER, DIAGRAM_ANNOTATIONS, FILE, GLOBAL_ID, ID, INDEX, \
     INSTRUCTIONAL_DIAGRAMS, JSONL_EXTENSION, JSON_EXTENSION, LABEL, LESSON_NAME, NON_DIAGRAM_QUESTIONS, PARA_BODY, \
     PARAGRAPHS, PROCESSED_TEXT, QUESTION, QUESTION_DIRECTORY, QUESTION_SET, QUESTIONS, SQUID, STEM, TEXT, TITLE, \
-    TOPICS, TQA
+    TOPICS, TQA, TQA_DIRECTORY
 
 
 def process_article_line(article_line, filename):
@@ -264,7 +264,7 @@ def load_tqa_articles(question_set_indices, config):
             list: the loaded TQA articles to be later stored into Elasticsearch
     """
     articles = []
-    tqa_file = open(config[QUESTION_DIRECTORY], 'r')
+    tqa_file = open(config[TQA_DIRECTORY], 'r')
     tqa_dataset = json.load(tqa_file)
     tqa_file.close()
 
@@ -290,6 +290,6 @@ def load_tqa_articles(question_set_indices, config):
                 TITLE: f'{TQA}-{question_set[LESSON_NAME].lower()}',
                 TEXT: tqa_text,
                 ID: question_set[GLOBAL_ID],
-                FILE: config[QUESTION_DIRECTORY].split('/')[-1]
+                FILE: config[TQA_DIRECTORY].split('/')[-1]
             })
     return articles
