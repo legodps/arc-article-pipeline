@@ -1,0 +1,243 @@
+[
+  {
+    "globalID": "L_0387",
+    "questions": {
+      "nonDiagramQuestions": {
+        "question_1": {
+          "answerChoices": {
+            "a": {
+              "processedText": "10"
+            },
+            "b": {
+              "processedText": "15"
+            },
+            "c": {
+              "processedText": "20"
+            },
+            "d": {
+              "processedText": "25"
+            }
+          },
+          "beingAsked": {
+            "processedText": "How many Amino Acids are there?"
+          },
+          "correctAnswer": {
+            "processedText": "c"
+          }
+        },
+        "question_2": {
+          "answerChoices": {
+            "a": {
+              "processedText": "LDL low-density lipoprotein"
+            },
+            "b": {
+              "processedText": "HDL high-density lipoprotein"
+            },
+            "c": {
+              "processedText": "MDL medium-density lipoprotein"
+            }
+          },
+          "beingAsked": {
+            "processedText": "Which of the following is the good type of cholesterol?"
+          },
+          "correctAnswer": {
+            "processedText": "b"
+          }
+        },
+        "question_3": {
+          "answerChoices": {
+            "a": {
+              "processedText": "Cabbage"
+            },
+            "b": {
+              "processedText": "Strawberries"
+            },
+            "c": {
+              "processedText": "Kale"
+            },
+            "d": {
+              "processedText": "Bananas"
+            }
+          },
+          "beingAsked": {
+            "processedText": "Which of the following is a good source of potassium?"
+          },
+          "correctAnswer": {
+            "processedText": "d"
+          }
+        },
+        "question_4": {
+          "answerChoices": {
+            "a": {
+              "processedText": "Whole Grains"
+            },
+            "b": {
+              "processedText": "Cookies"
+            },
+            "c": {
+              "processedText": "Kale"
+            },
+            "d": {
+              "processedText": "Fish"
+            }
+          },
+          "beingAsked": {
+            "processedText": "Which of these are not nutrient dense foods?"
+          },
+          "correctAnswer": {
+            "processedText": "b"
+          }
+        },"question_5": {
+          "answerChoices": {
+            "a": {
+              "processedText": "Milk"
+            },
+            "b": {
+              "processedText": "Corn"
+            },
+            "c": {
+              "processedText": "Kale"
+            },
+            "d": {
+              "processedText": "Pinto Beans"
+            }
+          },
+          "beingAsked": {
+            "processedText": "Which of these is a good source of calcium?"
+          },
+          "correctAnswer": {
+            "processedText": "a"
+          }
+        }
+      }
+    }
+  },
+  {
+    "globalID": "L_0199",
+    "questions": {
+      "nonDiagramQuestions": {
+        "question_1": {
+          "answerChoices": {
+            "a": {
+              "processedText": "6000 years ago"
+            },
+            "b": {
+              "processedText": "300,000 years ago"
+            },
+            "c": {
+              "processedText": "2.5 million years ago"
+            },
+            "d": {
+              "processedText": "6 million years ago"
+            },
+            "e": {
+              "processedText": "10 million years ago"
+            }
+          },
+          "beingAsked": {
+            "processedText": "When did the the first humans evolve?"
+          },
+          "correctAnswer": {
+            "processedText": "c"
+          }
+        },
+        "question_2": {
+          "answerChoices": {
+            "a": {
+              "processedText": "Gorillas"
+            },
+            "b": {
+              "processedText": "Macaques"
+            },
+            "c": {
+              "processedText": "Chimpanzees"
+            },
+            "d": {
+              "processedText": "Orangutans"
+            }
+          },
+          "beingAsked": {
+            "processedText": "Which of the following are human's closest living relatives?"
+          },
+          "correctAnswer": {
+            "processedText": "c"
+          }
+        },
+        "question_3": {
+          "answerChoices": {
+            "a": {
+              "processedText": "6000 years ago"
+            },
+            "b": {
+              "processedText": "300,000 years ago"
+            },
+            "c": {
+              "processedText": "2.5 million years ago"
+            },
+            "d": {
+              "processedText": "6 million years ago"
+            },
+            "e": {
+              "processedText": "10 million years ago"
+            }
+          },
+          "beingAsked": {
+            "processedText": "When did Homo Sapiens evolve?"
+          },
+          "correctAnswer": {
+            "processedText": "b"
+          }
+        },
+        "question_4": {
+          "answerChoices": {
+            "a": {
+              "processedText": "North America"
+            },
+            "b": {
+              "processedText": "South America"
+            },
+            "c": {
+              "processedText": "Europe"
+            },
+            "d": {
+              "processedText": "Asia"
+            },
+            "e": {
+              "processedText": "Australia"
+            },
+            "f": {
+              "processedText": "Africa"
+            },
+            "g": {
+              "processedText": "Antartica"
+            }
+          },
+          "beingAsked": {
+            "processedText": "Which continent did Homo Sapiens originate from?"
+          },
+          "correctAnswer": {
+            "processedText": "f"
+          }
+        },"question_5": {
+          "answerChoices": {
+            "a": {
+              "processedText": "Omnivorous"
+            },
+            "b": {
+              "processedText": "Carnivorous"
+            },
+            "c": {
+              "processedText": "herbivorous"
+            }
+          },
+          "beingAsked": {
+            "processedText": "Early human diets were?"
+          },
+          "correctAnswer": {
+            "processedText": "a"
+          }
+        }
+      }
+    }
+  }
+]

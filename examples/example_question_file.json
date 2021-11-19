@@ -1,0 +1,131 @@
+[
+  {
+    "globalID": "S_0001",
+    "questions": {
+      "nonDiagramQuestions": {
+        "question_00001": {
+          "answerChoices": {
+            "a": {
+              "processedText": "1"
+            },
+            "b": {
+              "processedText": "2"
+            },
+            "c": {
+              "processedText": "3"
+            }
+          },
+          "beingAsked": {
+            "processedText": "How many answer choices does this question have?"
+          },
+          "correctAnswer": {
+            "processedText": "c"
+          }
+        }
+      }
+    }
+  },
+  {
+    "globalID": "S_0002",
+    "questions": {
+      "nonDiagramQuestions": {
+        "question_00002": {
+          "answerChoices": {
+            "1": {
+              "processedText": "True"
+            },
+            "2": {
+              "processedText": "False"
+            }
+          },
+          "beingAsked": {
+            "processedText": "This file has 6 questions, True or False?"
+          },
+          "correctAnswer": {
+            "processedText": "1"
+          }
+        },
+        "question_00003": {
+          "answerChoices": {
+            "a": {
+              "processedText": "True"
+            },
+            "b": {
+              "processedText": "False"
+            }
+          },
+          "beingAsked": {
+            "processedText": "True or False, all questions must have 2 or 4 answers?"
+          },
+          "correctAnswer": {
+            "processedText": "b"
+          }
+        }
+      }
+    }
+  },
+  {
+    "globalID": "S_0003",
+    "questions": {
+      "nonDiagramQuestions": {
+        "question_00004": {
+          "answerChoices": {
+            "a": {
+              "processedText": "1"
+            },
+            "b": {
+              "processedText": "2"
+            },
+            "c": {
+              "processedText": "3"
+            },
+            "d": {
+              "processedText": "4"
+            },
+            "e": {
+              "processedText": "As many as you want"
+            }
+          },
+          "beingAsked": {
+            "processedText": "What's the maximum number of answer choices supported by EXAM?"
+          },
+          "correctAnswer": {
+            "processedText": "e"
+          }
+        },
+        "question_00005": {
+          "answerChoices": {
+            "1": {
+              "processedText": "True"
+            },
+            "2": {
+              "processedText": "False"
+            }
+          },
+          "beingAsked": {
+            "processedText": "True or False, the answer choices ids don't matter as long as they are unique"
+          },
+          "correctAnswer": {
+            "processedText": "1"
+          }
+        },
+        "question_00006": {
+          "answerChoices": {
+            "1": {
+              "processedText": "True"
+            },
+            "2": {
+              "processedText": "False"
+            }
+          },
+          "beingAsked": {
+            "processedText": "The question ids don't matter as long as they are unique"
+          },
+          "correctAnswer": {
+            "processedText": "1"
+          }
+        }
+      }
+    }
+  }
+]
